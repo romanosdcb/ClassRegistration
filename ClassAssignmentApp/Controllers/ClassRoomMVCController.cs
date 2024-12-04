@@ -51,6 +51,7 @@ namespace ClassAssignmentApp.Controllers
                 ClassRoomDataOBJ.ErrorCondition = false;
             }
 
+            //Read all ClassRoom records
             HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/ClassRoom").Result;
             ClassRoomMV.BuildingNumber = 0;
             ClassRoomMV.RoomNumber = 0;
@@ -64,6 +65,7 @@ namespace ClassAssignmentApp.Controllers
 
                 if (SelectedBuildingID != null && SelectedBuildingID > 0)
                 {
+                    //If a particular Building Number has been selected then only display those classrooms.
                     var SelectedBuildingData = data.Result.Where(x => x.BuildingNumber == SelectedBuildingID);
                     ClassRoomMV.ClassRoomList = SelectedBuildingData.ToList();
                 }
@@ -98,6 +100,7 @@ namespace ClassAssignmentApp.Controllers
                 }
                 else
                 {
+                    //Read the individual ClassRoom record
                     HttpResponseMessage editRecord = _client.GetAsync(_client.BaseAddress + "/ClassRoom/" + Id.ToString()).Result;
 
                     if (editRecord.IsSuccessStatusCode)

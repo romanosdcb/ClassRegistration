@@ -19,7 +19,7 @@ namespace ClassAssignmentWEBAPI.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ClassRoom>>> GetClassRooms()
-        {
+        {   //Get all ClassRoom records
             return await _context.ClassRooms.ToListAsync();
         }
 
