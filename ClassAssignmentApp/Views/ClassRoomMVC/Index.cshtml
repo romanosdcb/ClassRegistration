@@ -1,0 +1,229 @@
+﻿@model ClassAssignmentApp.Models.ClassRoomMVMaint
+
+@{
+    string buttonName = "Edit";
+   
+    switch (Model.OperationMode)
+    {
+        case "LIST":
+            Model.ShowDetailsForm = false;
+            break;
+
+        case "CHANGEDELETE":
+            Model.ShowDetailsForm = true;
+            break;
+
+        case "ADD":
+            Model.ShowDetailsForm = true;
+            break;
+
+        default:
+            break;
+    }
+}
+
+<div style="height: auto; border:solid; padding-bottom:20px;" class="container">
+    <div style="text-align:center">
+        <h2>Class Room Maintenance</h2>
+    </div>
+
+    <form asp-action="FileUpdate" method="post">
+    <table>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <td style="width: 200px; text-align:right; padding-right:5px;">
+                            <label row="1" asp-for="SelectedBuildingNo" class="form-label">Selected Building No:</label>
+                        </td>
+                        <td style="width: 100px; text-align:right; padding-bottom:2px;">
+                                <input style="width:100px;" row="1" asp-for="SelectedBuildingNo" class="form-control" placeholder="" />
+                        </td>
+                        <td>
+                                <button type="submit" name="command" value="Redisplay" class='btn btn-primary'>
+                                    Redisplay
+                                </button>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+            <td style="font-weight:600">
+                    @*<h4>@Html.ActionLink("Create Record", "Index", new { Id = -1 })</h4>*@
+                <a style="text-decoration-line: underline; font-size:2rem;" 
+                    class="navbar-brand" asp-area="" asp-controller="ClassRoomMVC"
+                    asp-action="Index" asp-area="" 
+                    asp-route-Id="-1">Enter New Classroom</a>
+             </td>
+         </tr>
+        <tr>
+            <td style="width:auto; vertical-align:top;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">ID</th>
+                            <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Building No</th>
+                            <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Room No</th>
+                            <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Maxium</th>
+                            <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Unavailable</th>
+                            <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Edit Link</th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var entry in Model.ClassRoomList)
+                        {
+                            <tr>
+                                <td style="width: 50px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.ClassRoomID</td>
+                                <td style="width: 120px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.BuildingNumber</td>
+                                <td style="width: 100px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.RoomNumber</td>
+                                <td style="width: 100px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.Capacity</td>
+                                <td style="width: 100px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.Unavailable</td>
+                                <td style="width: 150px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">
+                                @*@Html.ActionLink("Class Room Details", "Index", new {Id = @entry.ClassRoomID})*@
+                                <a style="text-decoration-line: underline;"
+                                    class="navbar-brand" asp-area="" asp-controller="ClassRoomMVC"
+                                    asp-action="Index" asp-area=""
+                                    asp-route-Id="@entry.ClassRoomID">Class Room details</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </td>
+
+            <td colspan="2" class="@(Model.ShowDetailsForm == true ? "display-contents" : "display-none")">
+                    <div style="margin-left:20px; height: auto; border:solid; border-color:grey; padding-top:20px; padding-bottom:20px;" class="container">
+                    <div>
+                        <div class="card-header bg-primary text-white">
+                            <h2>Class Room Record</h2>
+                        </div>
+
+                        <div style="width:300px;" class="card-body">
+                            
+
+                                <div class="form-group mb-3 label-wrap visually-hidden">
+                                    <label asp-for="ClassRoomID" class="form-label"></label>
+                                    <input asp-for="ClassRoomID" class="form-control" placeholder="" />
+                                </div>
+
+                                <div class="form-group mb-3 label-wrap">
+                                    <table>
+                                        <tr>
+                                            <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                <label row="1" asp-for="BuildingNumber" class="form-label">Building No:</label>
+                                            </td>
+                                            <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                <input style="width:100px;" row="1" asp-for="BuildingNumber"
+                                                    value="@(Model.BuildingNumber == 0 ? string.Empty : Model.BuildingNumber)"
+                                                    class="form-control" placeholder="" />
+                                                @* <span asp-validation-for="BuildingNumber" class="text-danger"></span> *@
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div class="form-group mb-3 label-wrap">
+                                    <table>
+                                        <tr>
+                                            <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                <label asp-for="RoomNumber" class="form-label">Room No:</label>
+                                            </td>
+                                            <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                <input style="width:100px;" asp-for="RoomNumber"
+                                                       value="@(Model.RoomNumber == 0 ? string.Empty : Model.RoomNumber)"
+                                                class="form-control" placeholder="" />
+                                                @* <span asp-validation-for="RoomNumber" class="text-danger"></span> *@
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="form-group mb-3 label-wrap">
+                                    <table>
+                                        <tr>
+                                            <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                <label asp-for="Capacity" class="form-label">Max Capacity:</label>
+                                            </td>
+                                            <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                <input style="width:100px;" asp-for="Capacity"
+                                                       value="@(Model.Capacity == 0 ? string.Empty : Model.Capacity)"
+                                                class="form-control" placeholder="" />
+                                                @* <span asp-validation-for="Capacity" class="text-danger"></span> *@
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="form-group mb-3 label-wrap">
+                                    <table>
+                                        <tr>
+                                            <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                <label asp-for="Unavailable" class="form-label">Unavailable:</label>
+                                            </td>
+
+
+                                            <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                <input class="form-check" asp-for="Unavail" type="checkbox" />
+                                             </td>
+
+
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <button type="submit" name="command" value="Create"
+                                            class='@(Model.OperationMode == "ADD" ? "show-button" : "hide-button") btn btn-primary'
+                                            onclick="return Confirm()">
+                                            Add
+                                    </button>
+                                    &nbsp;
+
+                                    <button type="submit" name="command" value="Edit"
+                                            class='@(Model.OperationMode == "CHANGEDELETE" ? "show-button" : "hide-button") btn btn-primary'
+                                            onclick="return Confirm()">
+                                            Update
+                                    </button>
+                                    &nbsp;
+
+                                    <button type="submit" name="command" value="Delete"
+                                            class='@(Model.OperationMode == "CHANGEDELETE" ? "show-button" : "hide-button") btn btn-primary'
+                                            onclick="return Confirm()">
+                                            Delete
+                                    </button>
+                                    &nbsp;
+
+                                    <button type="submit" name="command" value="Cancel" class='btn btn-primary'>Cancel
+                                    </button>
+                                </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:100px; width:500px;" class="@(Model.ErrorCondition == true ? "display-contents" : "display-none") text-danger">
+                            @Model.ErrorMessage
+                    </div>
+
+                </div>
+            </td>
+        </tr>
+    </table>
+    </form>
+    <div class="table-responsive">
+
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    function Confirm() { 
+        if (confirm('Are you sure?')) {
+            return true;
+        } else {
+            return false;
+        }
+}
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

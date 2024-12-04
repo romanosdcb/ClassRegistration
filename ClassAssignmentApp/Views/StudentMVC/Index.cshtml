@@ -1,0 +1,89 @@
+﻿@model ClassAssignmentApp.Models.StudentMVMaint
+
+@{
+    string LN = "";
+}
+
+<div style="height: auto; border:solid; padding-bottom:20px;" class="container">
+    <div style="text-align:center">
+        <h2>Student Maintenance</h2>
+    </div>
+
+    <form asp-action="Index" method="post">
+        <div>
+            <div>
+                <table>
+                    <tr>
+                        <td style="width: 200px; text-align:right; padding-right:5px;">
+                            <label row="1" asp-for="LastNameSelection" class="form-label">Select by Last Name:</label>
+                        </td>
+                        <td style="width: 200px; text-align:right; padding-bottom:2px;">
+                            <input style="width:100px;" row="1" asp-for="LastNameSelection" class="form-control" placeholder="" />
+                        </td>
+                        <td>
+                            <button type="submit" name="command" value="Redisplay" class='btn btn-primary'>
+                                Redisplay
+                            </button>
+
+                        </td>
+                        <td style="padding-left: 270px; font-weight:600">
+                            @*
+                            <h5>
+                                @Html.ActionLink("Enter New Student", "Edit", new { Id = 0 })
+                            </h5>
+                            *@
+
+                            
+                            <a style="text-decoration-line: underline; font-size:2rem;"
+                               class="navbar-brand" asp-area="" asp-controller="StudentMVC"
+                               asp-action="Edit" asp-area=""
+                               asp-route-Id="0">Enter New Student</a>
+                            
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="margin-top:20px;">
+                <table>
+                    <tr>
+                        <td style="width:1500px; vertical-align:top;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">ID</th>
+                                        <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">First Name</th>
+                                        <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Last Name</th>
+                                        <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Class Rank</th>
+                                        <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Phone No</th>
+                                        <th style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Edit Link</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var entry in Model.StudentList)
+                                    {
+                                        <tr>
+                                            <td style="width: 50px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.StudentID</td>
+                                            <td style="width: 200px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.FirstName</td>
+                                            <td style="width: 200px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.LastName</td>
+                                            <td style="width: 200px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.ClassRank</td>
+                                            <td style="width: 150px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@entry.PhoneNumber</td>
+                                            <td style="width: 150px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">
+                                                @*@Html.ActionLink("Student Details", "Edit", new { Id = @entry.StudentID })*@
+                                                <a style="text-decoration-line: underline;"
+                                                   class="navbar-brand" asp-area="" asp-controller="StudentMVC"
+                                                   asp-action="Edit" asp-area=""
+                                                   asp-route-Id="@entry.StudentID">Student Details</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </form>
+
+</div>

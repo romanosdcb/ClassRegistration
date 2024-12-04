@@ -1,0 +1,6 @@
+@ClassAssignmentWEBAPI_HostAddress = http://localhost:5115
+
+GET {{ClassAssignmentWEBAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

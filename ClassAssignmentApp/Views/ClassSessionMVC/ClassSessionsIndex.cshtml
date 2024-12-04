@@ -1,0 +1,371 @@
+﻿@model ClassAssignmentApp.Models.ClassSessionMVMaint
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@*
+<style>
+    .label-wrap {
+        display: flex;
+    }
+
+    .display-none {
+        display: none;
+        border-style: none;
+        border-block: none;
+    }
+
+    .display-contents {
+        display: contents;
+        border-style: solid;
+        border-width: 2px;
+        border-block-color: black;
+        border-color: black;
+        border-block-style: solid;
+        border-block-width: 2px;
+        width: auto;
+    }
+
+    .show-button {
+        visibility: visible;
+    }
+
+    .hide-button {
+        visibility: hidden;
+    }
+
+    .closed-out {
+        background-color:yellow;
+    }
+</style>
+*@
+
+@{
+    string Name = "";
+}
+
+<div style="margin-left:-100px; width:1500px; height:800px; border-style:solid; border-width:1px;">
+
+    <div style="width:1500px; text-align:center;">
+        <h3><ul>Class Session Assignment</ul></h3>
+    </div>
+
+    
+
+    <form asp-action="ClassSessionsIndex" method="Post">
+         <div>
+            @*
+             @ViewBag.BuildingNumber
+             @Model.LastBuildingNumber = @ViewBag.BuildingNumber;
+             
+             
+            <label row="1" asp-for="LastBuildingNumber" class="form-label">Last Building Number:</label>
+
+            <input type="hidden" name="ClassSessionID" asp-for="ClassSessionID" />
+            *@
+
+           
+
+            @{
+                Model.ClassSessionID = 101;
+                int Counter = 0;
+            }
+
+            <input style="width:200px;" type="hidden" row="1" asp-for="LastBuildingNumber" class="form-control" placeholder="" />
+        </div>
+        <div style="margin-top:10px; margin-left:10px;">
+            <table style="width:1400px;">
+                <tr>
+                    <td style="width:100px; text-align:right;padding-right:5px;">
+                        <label>Instructor:</label>
+                    </td>
+                    <td style="width:175px; text-align:left;">
+                        <select style="width:175px; text-align:left;" class="form-select" asp-items="Model.InstructorSelectList"
+                                asp-for="InstructorID"
+                                onchange="this.form.submit()">
+                            <option value="NO SELECTED VALUE">Select Instructor</option>
+                        </select>
+
+                    </td>
+                    <td style="width:100px; text-align:right;padding-right:5px;">
+                        <label>Building:</label>
+                     </td>
+                    <td style="width:160px; text-align:left;">
+                        <select style="width:160px; text-align:left;" class="form-select" asp-items="Model.BuildingSelectList"
+                                asp-for="BuildingNumber"
+                                onchange="this.form.submit()">
+                            <option value="NO SELECTED VALUE">Select Building</option>
+                        </select>
+                    </td>
+
+                    <td style="width:100px; text-align:right;padding-right:5px;">
+                        <label>Room:</label>
+                    </td>
+
+                    <td style="width:140px; text-align:left;">
+                        <div>
+                            <select style="width:140px; text-align:left;" class="form-select" asp-items="Model.RoomSelectList"
+                                    asp-for="ClassRoomID"
+                                    onchange="this.form.submit()">
+                                <option value="NO SELECTED VALUE">Select Room</option>
+                            </select>
+
+                        </div>
+                    </td>
+
+
+                    <td style="width:100px; text-align:right;padding-right:5px;">
+                        <label>Course:</label>
+                    </td>
+                    <td style="width:175px; text-align:left;">
+                        <select style="width:175px; text-align:left;" class="form-select" asp-items="Model.CourseSelectList"
+                                asp-for="CourseID"
+                                onchange="this.form.submit()">
+                            <option value="NO SELECTED VALUE">Select Course</option>
+                        </select>
+                    </td>
+
+                    <td style="width:100px; text-align:right;padding-right:5px;">
+                        <label>Week Day:</label>
+                    </td>
+                    <td style="width:175px; text-align:left;">
+                        <select style="width:175px; text-align:left;" class="form-select" asp-items="Model.WeekDaySelectList"
+                                asp-for="WeekDay"
+                                onchange="this.form.submit()">
+                            <option value="NO SELECTED VALUE">Select Day</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="@(Model.ShowForInput == true ? "display-contents" : "display-none")">
+            <table style="width:auto; margin-left:1px; margin-top:20px;">
+                <tr>
+                    <td style="width:450px;"> 
+                        <table style="width:450px; text-align:right;padding-right:10px;"
+                            class="@(Model.ErrorCondition == true ? "display-contents" : "display-none")">
+                            <tr>
+                                <td style="width:450px;" class="text-danger">
+                                    <label style="width:450px;" asp-for=ErrorMessage class="form-label">@Model.ErrorMessage</label>
+                                </td>
+                            </tr>
+                        </table>
+                     </td>
+                    <td style="width:150px; text-align:right;">
+                        Start Time:
+                    </td>
+                    <td style="width:200px; text-align:left;padding-left:10px;">
+                        <input style="width:125px;" asp-for="StartTime"
+                               value="@(Model.StartTime == TimeOnly.MinValue ? string.Empty : Model.StartTime)"
+                               class="form-control" type="time" />
+                        <span asp-validation-for="StartTime" class="text-danger"></span>
+                    </td>
+                    <td style="width:75px; text-align:left;">
+
+                        @*
+                        <label row="1" asp-for="EndTime" class="form-label">End Time:</label>
+                        *@
+                        End Time:
+                    </td>
+                    <td style="width:150px; text-align:left;">
+                        <input style="width:125px;" asp-for="EndTime"
+                               value="@(Model.EndTime == TimeOnly.MinValue ? string.Empty : Model.EndTime)"
+                               class="form-control" type="time" />
+                        <span asp-validation-for="EndTime" class="text-danger"></span>
+                    </td>
+                    <td style="width:150px; text-align:left;">
+                        <button type="submit" name="command" value="NewEntry"
+                                class= 'btn btn-primary'
+                                onclick="return Confirm('NewEntry')">
+                            Enter
+                        </button>
+                    </td>
+                    <td style="width:200px; text-align:left;">
+                        <table style="width:200px; text-align:left;padding-left:10px;"
+                               class="@(Model.ShowScreenMessage == true ? "display-contents" : "display-none")">
+                            <tr>
+                                <td style="width:200px; color:green;">
+                                    <label style="width:200px;" asp-for=ScreenMessage class="form-label">@Model.ScreenMessage</label>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="@(Model.ShowForInput == true && Model.ShowInstructorSchedule == true ? "display-contents" : "display-none")">
+            <table style="width:auto; margin-left:20px; margin-top:20px;">
+                <tr>
+                    <td style="width:auto; text-align:left; vertical-align:top; padding-left:10px;">
+                        <table style="border-style:solid; border-width:1px; width:600px;">
+                            @{
+                                string InstName = "";
+                                string InstTitle = "Instructor Schedule";
+                                if (Model.InstructorSessions.Count > 0 
+                                    && Model.InstructorSessions[0].FirstName.Length > 0)
+                                {
+                                    if (Model.InstructorSessions[0].MiddleName == "."
+                                    || Model.InstructorSessions[0].MiddleName.Length == 0)
+                                        InstName = Model.InstructorSessions[0].FirstName + " "
+                                        + Model.InstructorSessions[0].LastName;
+                                    else
+                                        InstName = Model.InstructorSessions[0].FirstName + " "
+                                        + Model.InstructorSessions[0].MiddleName + " "
+                                        + Model.InstructorSessions[0].LastName;
+                                    InstTitle = "Instructor Schedule for " + InstName;
+                                }
+                            }
+                            <thead>
+                                <tr>
+                                    <td colspan="6" style="text-align:center;">
+                                        <b>@InstTitle</b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th style="width:100px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Bld #</th>
+                                    <th style="width:100px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Rm #</th>
+                                    <th style="width:600px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Course</th>
+                                    <th style="width:150px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">From</th>
+                                    <th style="width:150px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">To</th>
+                                    <th style="width:150px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Remove</th>
+                                </tr>
+                            </thead>
+
+
+                            <tbody class="@(Model.ShowForInput == true && Model.ShowInstructorSchedule == true ? "display-contents" : "display-none")">
+                                        @foreach (var item in Model.InstructorSessions)
+                                        {                                           
+                                            <tr>
+                                                <td style="width: 100px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.BuildingNumber</td>
+                                                <td style="width: 100px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.RoomNumber</td>
+                                                <td style="width: 600px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.Title</td>
+                                                <td style="width: 170px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.StartTime</td>
+                                                <td style="width: 170px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.EndTime</td>
+                                        
+                                                <td style="width: 150px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">
+
+                                                    <input type="hidden" id="SessionKey" name="ClassSessionID" value="@item.ClassSessionID" />
+
+                                                    <a class="navbar-brand" asp-area="" asp-controller="ClassSessionMVC"
+                                                       asp-action="FileUpdate" asp-area="" asp-route-InstructorID="@Model.InstructorID"
+                                                       asp-route-ClassRoomID="@Model.ClassRoomID"
+                                                       asp-route-CourseID="@Model.CourseID"
+                                                       asp-route-WeekDay="@Model.WeekDay"
+                                                       asp-route-BuildingNumber="@Model.BuildingNumber"
+                                                       asp-route-id="@item.ClassSessionID"
+                                                       onclick="return ConfirmDelete()">Remove</a>
+                      
+                                                </td>
+                                    
+                                            </tr>
+                                        }
+                                </tbody>
+                        </table>
+                    </td>
+
+
+
+
+
+                    <td style="width:auto; text-align:left; vertical-align:top; padding-left:20px;">
+                        <table style="border-style:solid; border-width:1px; width:750px;">
+                            @{
+                                string BuildingName = "";
+                                string ClassRoomTitle = "";
+
+                                if (Model.ClassRoomSessions.Count > 0
+                                && Model.ClassRoomSessions[0].ClassSessionID > 0)
+                                {
+                                    BuildingName = "Building Number " + Model.ClassRoomSessions[0].BuildingNumber.ToString();
+                                    ClassRoomTitle = BuildingName + ", Room # " + Model.ClassRoomSessions[0].RoomNumber.ToString();
+                                }
+                            }
+
+                            <thead>
+                                <tr>
+                                    <td colspan="5" style="text-align:center;">
+                                        <b>@ClassRoomTitle</b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th style="width:350px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Instructor</th>
+                                    <th style="width:600px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Course</th>
+                                    <th style="width:150px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">From</th>
+                                    <th style="width:150px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">To</th>
+                                    <th style="width:150px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody class="@(Model.ShowForInput == true && Model.ShowInstructorSchedule == true ? "display-contents" : "display-none")">
+                                @foreach (var item in Model.ClassRoomSessions)
+                                {
+                                    Counter += 1;
+                                    string ClassRoomInst = "";
+                                    string ClassRoomFirstName = (item.FirstName == null ? "" : item.FirstName);
+                                    string ClassRoomLastName = (item.LastName == null ? "" : item.LastName);
+
+                                    if (item.MiddleName == null || item.MiddleName == "." || item.MiddleName == "")
+                                        ClassRoomInst = ClassRoomFirstName + " " + ClassRoomLastName;
+                                    else
+                                        ClassRoomInst = ClassRoomFirstName + " " + item.MiddleName + " " + ClassRoomLastName;
+
+                                    <tr>
+                                        <td style="width: 350px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@ClassRoomInst</td>
+                                        <td style="width: 600px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.Title</td>
+                                        <td style="width: 170px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.StartTime</td>
+                                        <td style="width: 170px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.EndTime</td>
+
+                                        <td style="width: 150px; padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">
+
+                                            @*<input type="hidden" id="SessionKey" name="ClassSessionID" value="@item.ClassSessionID" />*@
+
+                                            <a class="navbar-brand" asp-area="" asp-controller="ClassSessionMVC"
+                                               asp-action="FileUpdate" asp-area="" asp-route-InstructorID="@Model.InstructorID"
+                                               asp-route-ClassRoomID="@Model.ClassRoomID"
+                                               asp-route-CourseID="@Model.CourseID"
+                                               asp-route-WeekDay="@Model.WeekDay"
+                                               asp-route-BuildingNumber="@Model.BuildingNumber"
+                                               asp-route-id="@item.ClassSessionID"
+                                               onclick="return ConfirmDelete()">Remove</a>
+
+                                        </td>
+
+                                    </tr>
+                                }
+                            </tbody>
+
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    function Confirm(action) {
+        if (confirm('Are you sure?')) {
+            // alert("action: " + action + @Model.WeekDay);
+            // @Model.WeekDay = action + @Model.WeekDay;
+            this.form.submit();
+            return true;
+
+        } else {
+            return false;
+        }
+    }
+
+    function ConfirmDelete() {
+        if (confirm('Delete this session?')) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

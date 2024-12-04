@@ -1,0 +1,227 @@
+﻿@model ClassAssignmentApp.Models.StudentSessionMVMaint
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    string InstructorName = string.Empty;
+    string DOW = string.Empty;
+    string BldRoom = string.Empty;
+    string CourseStatus = string.Empty;
+}
+
+<div style="margin-left:-200px; padding-bottom:20px; width:1700px; height:auto; border-style:solid; border-width:1px;">
+
+    <div style="width:1700px; text-align:center;">
+        <h3><ul>Student Class Assignment</ul></h3>
+    </div>
+
+   <form asp-action="StudentSessionsIndex" method="Post">
+       <div>
+            <table style="width:auto;">
+                <tr>
+                    <td style="width:100px; text-align:right;padding-right:5px;">
+                        <label>Student:</label>
+                    </td>
+                    <td style="width:275px; text-align:left;">
+                        <select style="width:250px; text-align:left;" class="form-select" asp-items="Model.StudentSelectList"
+                                asp-for="StudentID"
+                                onchange="this.form.submit()">
+                            <option value="NO SELECTED VALUE">Select Student</option>
+                        </select>
+                    </td>
+
+                    <td style="width:100px; text-align:right;padding-right:5px;">
+                        <label>Course:</label>
+                    </td>
+                    <td style="width:325px; text-align:left;">
+                        <select style="width:300px; text-align:left;" class="form-select" asp-items="Model.CourseSelectList"
+                                asp-for="CourseID"
+                                onchange="this.form.submit()">
+                            @*<option value="NO SELECTED VALUE">Select Course</option>*@
+                        </select>
+                    </td>
+                    <td style="width:400px; text-align:left; color:blue;" class="@(Model.ShowScreenMessage == true ? "display-contents" : "display-none")">
+                        <span style="font-size:x-large; padding-left:250px;">@Model.ScreenMessage</span>
+                    </td>
+                </tr>
+            </table>
+       </div>
+
+
+
+
+
+        <div style="width:auto;" class="@(Model.ShowForInput == true && Model.ShowStudentSchedule == true ? "display-contents" : "display-none")">
+            <table style="width:auto; margin-left:20px; margin-top:20px;">
+                <tr>
+                    <td style="width:850px; text-align:left; vertical-align:top; padding-left:10px; padding-right:40px;">
+                        <table style="border-style:solid; border-width:1px; width:850px;">
+                            @{
+                                string StudentScheduleHeading = "Student Schedule for " + Model.StudentName;
+                                }
+                            <thead>
+                                <tr>
+                                    <td colspan="7" style="text-align:center;">
+                                        <b>@StudentScheduleHeading</b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th style="width:50px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">DOW</th>
+                                    <th style="width:100px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">From</th>
+                                    <th style="width:100px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">To</th>
+                                    <th style="width:250px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Course</th>
+                                    <th style="width:75px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Bld/Rm</th>
+                                    <th style="width:150px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Instructor</th>
+                                    <th style="width:100px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Remove</th>
+                                </tr>
+                            </thead>
+
+
+                            <tbody class="@(Model.ShowForInput == true && Model.ShowStudentSchedule == true ? "display-contents" : "display-none")">
+                                @foreach (var item in Model.StudentSessions)
+                                {
+                                    InstructorName = item.FirstName + ' ' + item.LastName;
+                                    DOW = "???";
+                                    if (item.DayOfWeek == "Monday") DOW = "Mon";
+                                    if (item.DayOfWeek == "Tuesday") DOW = "Tues";
+                                    if (item.DayOfWeek == "Wednesday") DOW = "Wed";
+                                    if (item.DayOfWeek == "Thursday") DOW = "Thu";
+                                    if (item.DayOfWeek == "Friday") DOW = "Fri";
+                                    if (item.DayOfWeek == "Saturday") DOW = "Sat";
+                                    if (item.DayOfWeek == "Sunday") DOW = "Sun";
+                                    BldRoom = item.BuildingNumber.ToString() + '/' + item.RoomNumber.ToString();
+
+                                    <tr>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@DOW</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.StartTime</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.EndTime</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.Title</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@BldRoom</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@InstructorName</td>
+
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">
+
+                                            <input type="hidden" id="SessionKey" name="ClassSessionID" value="@item.ClassSessionID" />
+
+                                            <a style="text-decoration-line: underline;" class="navbar-brand" asp-area="" asp-controller="ClassSessionMVC"
+                                               asp-action="RemoveCourseAssignment" asp-area=""
+                                               asp-route-StudentClassSessionID="@item.StudentClassSessionID"
+                                               asp-route-StudentID="@Model.StudentID"
+                                               onclick="return ConfirmDelete()">Remove</a>
+
+                                        </td>
+
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+
+
+
+
+
+                    <td class="@(Model.ShowForInput == true && Model.ShowCourseSchedule == true ? "display-contents" : "display-none")" style="width:600px; text-align:left; vertical-align:top;">
+                        <table style="border-style:solid; border-width:1px; width:600px;">
+                            @{
+                                 string CourseOfferingsTitle = "";
+
+                                if (Model.CourseOfferings.Count > 0)
+                                {
+                                    CourseOfferingsTitle = "Offerings for Course " + Model.CourseName;
+                                }
+                            }
+
+                            <thead>
+                                <tr>
+                                    <td colspan="6" style="text-align:center;">
+                                        <b>@CourseOfferingsTitle</b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th style="width:50px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">DOW</th>
+                                    <th style="width:100px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">From</th>
+                                    <th style="width:100px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">To</th>
+                                    <th style="width:75px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Bld/Rm</th>
+                                    <th style="width:150px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Instructor</th>
+                                    <th style="width:100px;padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center;">Select</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+ 
+                                @foreach (var item in Model.CourseOfferings)
+                                {
+                                    CourseStatus = item.AvailabilityStatus;
+                                    if (item.ClosedOut == "T") CourseStatus = "CLOSED";
+                                    BldRoom = item.BuildingNumber.ToString() + '/' + item.RoomNumber.ToString();
+                                    <tr>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.DayOfWeek</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.StartTime</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.EndTime</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@BldRoom</td>
+                                        <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown;">@item.InstructorName</td>
+
+                                        @switch (CourseStatus)
+                                        {
+                                            case "SELECTED":
+                                                <td class="selected" style="padding:5px; border:solid; border-width:1px; text-align:center; border-color:saddlebrown;">
+                                                    SELECTED
+                                                </td>
+                                                break;
+                                            case "CONFLICT":
+                                                <td class="conflict" style="padding:5px; border:solid; border-width:1px; text-align:center; border-color:saddlebrown;">
+                                                    CONFLICT
+                                                </td>
+                                                break;
+                                            case "CLOSED":
+                                                <td class="closed-out" style="padding:5px; border:solid; border-width:1px; text-align:center; border-color:saddlebrown;">
+                                                    CLOSED OUT
+                                                </td>
+                                                break;
+                                            default:
+                                                <td style="padding:5px; border:solid; border-width:1px; border-color:saddlebrown; text-align:center; font-weight:600;">
+                                                    <a style="text-decoration-line: underline;" class="navbar-brand" asp-area="" asp-controller="ClassSessionMVC"
+                                                       asp-action="RegisterStudent" asp-area="" asp-route-StudentID="@Model.StudentID"
+                                                       asp-route-ClassSessionID="@item.ClassSessionID"
+                                                       asp-route-CourseID="@Model.CourseID">ADD</a>
+                                                </td>
+                                                break;
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+
+                        </table>
+                    
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </form>
+
+</div>
+
+<script type="text/javascript">
+    function Confirm(action) {
+        if (confirm('Are you sure?')) {
+            // alert("action: " + action + @Model.WeekDay);
+            // @Model.WeekDay = action + @Model.WeekDay;
+            this.form.submit();
+            return true;
+
+        } else {
+            return false;
+        }
+    }
+
+    function ConfirmDelete() {
+        if (confirm('Delete this session?')) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+</script>

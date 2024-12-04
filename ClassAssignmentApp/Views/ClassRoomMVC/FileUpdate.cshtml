@@ -1,0 +1,29 @@
+﻿@model ClassAssignmentApp.Models.ClassRoomMVMaint
+
+<div style="background-color:beige; border:solid; width: 1000px; height:auto; padding: 20px;">
+    
+        <table style="width:auto;">
+            <tr>
+                <td style="width: 900px; text-align:center;">
+                    <h1>ERROR PAGE</h1>
+                </td>
+            </tr>
+        </table>
+
+    <div style="margin-top:50px;">
+        <h3>
+            <span style:margin-left:100px;">
+                Error: &nbsp; @Model.ErrorMessage
+            </span>
+        </h3>
+        
+    </div>
+
+    <div style="margin-top:50px; margin-left:20px;">
+        @*@Html.ActionLink("Return to Input screen", "Index", new {Id = @Model.ClassRoomID} )*@
+        <a style="text-decoration-line: underline;"
+           class="navbar-brand" asp-area="" asp-controller="ClassRoomMVC"
+           asp-action="Index" asp-area=""
+           asp-route-Id="@Model.ClassRoomID">Return to Input screen</a>
+    </div>
+</div>

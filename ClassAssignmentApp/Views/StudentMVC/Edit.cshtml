@@ -1,0 +1,326 @@
+﻿@model StudentMVMaint
+
+@{
+    string buttonName = "Edit";
+}
+
+<style>
+    .label-wrap {
+        display: flex;
+    }
+
+    .display-none {
+        display: none;
+        border-style: none;
+        border-block:none;
+    }
+
+    .display-contents {
+        display: contents;
+        border-style: solid;
+        border-width: 2px;
+        border-block-color: black;
+        border-color: black;
+        border-block-style:solid;
+        border-block-width: 2px;
+        width:auto;
+    }
+
+    .show-button {
+        visibility: visible;
+        width: 100px;
+    }
+
+    .hide-button {
+        visibility: hidden;
+    }
+</style>
+
+@{
+    string ScreenHeading = "";
+    if (Model.OperationMode == "ADD")
+        ScreenHeading = "Add New Student";
+    else
+        ScreenHeading = "Update or Delete Student";
+}
+
+<div class="container mt-4">
+    <div class="row>">
+        <div class="colcol-md-8 offset-md2-2">
+            <div class="card">
+                <div style="text-align:center;" class="card-header bg-primary text-white">
+                    <h2>@ScreenHeading</h2>
+                </div>
+
+                <div style="border:solid; border-width:1px; border-color:gray;" class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <div class="@(Model.StudentID != null && Model.StudentID > 0 ? "display-contents" : "display-none")">
+                            <label asp-for="StudentID" class="form-label"><span>Record Key: </span>@Model.StudentID</label>
+
+                            @* <label asp-for="StudentID" class="form-control" value=Model.StudentID></label> *@
+                            @Html.HiddenFor(m => m.StudentID)
+
+                        </div>
+
+                        <div>
+                            <table>
+                                <tr>
+                                    <td style="width: 500px">
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="FirstName" class="form-label">First Name:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                        <input style="width:200px;" row="1" asp-for="FirstName"
+                                                               value="@(Model.FirstName == "" ? string.Empty : Model.FirstName)"
+                                                               class="form-control" placeholder="" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="MiddleName" class="form-label">Middle Name:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                        <input style="width:200px;" row="1" asp-for="MiddleName"
+                                                               value="@(Model.MiddleName == "" ? string.Empty : Model.MiddleName)"
+                                                               class="form-control" placeholder="" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="LastName" class="form-label">Last Name:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                        <input style="width:200px;" row="1" asp-for="LastName"
+                                                               value="@(Model.LastName == "" ? string.Empty : Model.LastName)"
+                                                               class="form-control" placeholder="" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table style="margin-left:50px; width:250px;">
+                                                <tr>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px; border:solid; border-width:1px">
+                                                        <table style="margin-left:10px;">
+                                                            <tr>
+                                                                <td colspan="2" style="text-align:center;"><u>Student Class Rank</u></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style="width:125px; text-align:left;">
+                                                                    <label for="Rank1">Freshmen</label>
+                                                                    <input class="form-check-input" type="radio" id="Rank1" asp-for="ClassRank" name="ClassRank" value="1" />
+                                                                </td>
+                                                                <td style="width:125px; text-align:right; padding-right:10px;">
+                                                                    <label for="Rank2">Sophmore</label>
+                                                                    <input class="form-check-input" type="radio" id="Rank2" asp-for="ClassRank" name="ClassRank" value="2" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style="width:125px; text-align:left; padding-left:27px;">
+                                                                    <label for="Rank3">Junior</label>
+                                                                    <input class="form-check-input" type="radio" id="Rank3" asp-for="ClassRank" name="ClassRank" value="3" />
+                                                                </td>
+                                                                <td style="width:125px; text-align:right; padding-right:10px;">
+                                                                    <label for="Rank4">Senior</label>
+                                                                    <input class="form-check-input" type="radio" id="Rank4" asp-for="ClassRank" name="ClassRank" value="4" />
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="PhoneNumber" class="form-label">Phone Number:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                        <input style="width:200px;" row="1" asp-for="PhoneNumber"
+                                                               value="@(Model.PhoneNumber == "" ? string.Empty : Model.PhoneNumber)"
+                                                               class="form-control" placeholder="" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                    <td style="width: 500px">
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="AddressLine1" class="form-label">Address Line 1:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                        <input style="width:200px;" row="1" asp-for="AddressLine1"
+                                                               value="@(Model.AddressLine1 == "" ? string.Empty : Model.AddressLine1)"
+                                                               class="form-control" placeholder="" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="AddressLine2" class="form-label">Address Line 2:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                        <input style="width:200px;" row="1" asp-for="AddressLine2"
+                                                               value="@(Model.AddressLine2 == "" ? string.Empty : Model.AddressLine2)"
+                                                               class="form-control" placeholder="" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="City" class="form-label">City:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                        <input style="width:200px;" row="1" asp-for="City"
+                                                               value="@(Model.City == "" ? string.Empty : Model.City)"
+                                                               class="form-control" placeholder="" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="State" class="form-label">State:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+
+
+                                                        <select class="form-select" asp-items="Model.StateSelectList" asp-for="State">
+                                                            <option value="NO SELECTED VALUE">Select A State</option>
+                                                        </select>
+
+
+                                                        @*
+                                                        <select class="form-select" asp-items="Model.StateSelectList" asp-for="State" name="command" value="DD" onchange="this.form.submit();">
+                                                            <option value="NO SELECTED VALUE">Select A State</option>
+                                                        </select>
+                                                        *@
+@*
+                                                        @Html.DropDownList("StateSelected", @Model.StateSelectList, "--Select State--", new { @onchange = "this.form.submit();" })
+*@
+
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="form-group mb-3 label-wrap">
+                                            <table>
+                                                <tr>
+                                                    <td style="width: 150px; text-align:right; padding-right:5px;">
+                                                        <label row="1" asp-for="ZipCode" class="form-label">Zip Code:</label>
+                                                    </td>
+                                                    <td style="width: auto; text-align:right; padding-bottom:2px;">
+                                                        <input style="width:200px;" row="1" asp-for="ZipCode"
+                                                               value="@(Model.ZipCode == "" ? string.Empty : Model.ZipCode)"
+                                                               class="form-control" placeholder="" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        @if (@Model.StudentID == null || @Model.StudentID < 1)
+                        {
+                            buttonName = "Add";
+                        }
+                        else
+                        {
+                            buttonName = "Update";
+                        }
+
+                        <div style="width:400px;" class="d-flex justify-content-between">
+
+                            <button style="text-align:left" type="submit" name="command" value="Create"
+                                    class='@(Model.OperationMode == "ADD" ? "show-button" : "hide-button") btn btn-primary'
+                                    onclick="return Confirm('Add this record')">
+                                Save
+                            </button>
+
+                            <button style="text-align:left" type="submit" name="command" value="Edit"
+                                    class='@(Model.OperationMode == "CHANGEDELETE" ? "show-button" : "hide-button") btn btn-primary'
+                                    onclick="return Confirm('Update this record')">
+                                Update
+                            </button>
+
+                            <button style="text-align:left" type="submit" name="command" value="Delete"
+                                    class='@(Model.OperationMode == "CHANGEDELETE" ? "show-button" : "hide-button") btn btn-primary'
+                                    onclick="return Confirm('Delete this record')">
+                                Delete
+                            </button>
+
+                            <button style="text-align:left" type="submit" name="command" value="Cancel"
+                                    class='btn btn-primary'
+                                    onclick="return Confirm('cancel the update')">
+                                Cancel
+                            </button>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    function Confirm(actionText) {
+        if (confirm('Are you sure you want to ' + actionText + '?')) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function PostBack() {
+        alert("Do Post Back!");
+        document.forms[0].submit();
+    }
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function() {
+            //alert("Test");
+        })
+</script>
+}

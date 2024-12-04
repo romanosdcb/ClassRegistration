@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@* <div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div> *@
+
+<div style="width:1000px;height:700px;border:solid">
+    <h1 style="padding-left:10px;font-weight:600;color:blue;">Master Class Assignment and Scheduling Application</h1>
+    <div style="margin-top:20px;">
+        <table style="width:1000px;">
+            <tr>
+                <td style="text-align:center;text-decoration:underline;">
+                    <h2>MAIN MENU</h2>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td style="padding-left:300px;">
+                    <a class="nav-link text-dark" style="text-decoration:underline;" asp-area="" asp-controller="Home" asp-action="FileMaintenance">
+                        <h3>File Maintenance</h3></a>
+                    
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-left:300px;">
+                    <a class="nav-link text-dark" style="text-decoration:underline;" asp-area="" asp-controller="ClassSessionMVC" asp-action="ClassSessionsIndex">
+                        <h3>Instructor Class Assignment</h3>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-left:300px;">
+                    <a class="nav-link text-dark" style="text-decoration:underline;" asp-area="" asp-controller="ClassSessionMVC" asp-action="StudentSessionsIndex">
+                        <h3>Student Class Registration</h3>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-left:300px;">
+                    <a class="nav-link text-dark" style="text-decoration:underline;" asp-area="" asp-controller="ScheduleMVC" asp-action="ScheduleIndex">
+                        <h3>Schedule Listings</h3>
+                    </a>
+                </td>
+            </tr>
+
+        </table>
+    </div>
+</div>
