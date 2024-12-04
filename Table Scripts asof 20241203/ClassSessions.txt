@@ -1,0 +1,29 @@
+USE [SchoolTrial01]
+GO
+
+/****** Object:  Table [dbo].[ClassSessions]    Script Date: 12/3/2024 10:43:06 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[ClassSessions](
+	[ClassSessionID] [int] IDENTITY(1,1) NOT NULL,
+	[WeekDay] [nvarchar](10) NOT NULL,
+	[StartTime] [time](7) NOT NULL,
+	[EndTime] [time](7) NOT NULL,
+	[InstructorID] [int] NOT NULL,
+	[ClassRoomID] [int] NOT NULL,
+	[CourseID] [int] NOT NULL,
+ CONSTRAINT [PK_ClassSessions] PRIMARY KEY CLUSTERED 
+(
+	[ClassSessionID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[ClassSessions] ADD  DEFAULT ((0)) FOR [CourseID]
+GO
+
+

@@ -1,0 +1,32 @@
+USE [SchoolTrial01]
+GO
+/****** Object:  StoredProcedure [dbo].[InstructorScheduleByDayOfWeek]    Script Date: 12/3/2024 10:34:43 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		Tom Romano
+-- Create date: 11/4/2024
+-- Description:	Instructor schedule for given Day of Week
+-- =============================================
+ALTER PROCEDURE [dbo].[InstructorScheduleByDayOfWeek]
+	@InstructorID int,
+	@WeekDay varchar(10)
+	
+	
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	SELECT StudentClassSessionID = 0, CS.ClassSessionID, CS.InstructorID, I.FirstName, I.MiddleName, I.LastName, CR.BuildingNumber,CR.RoomNumber, Co.Title, CS.StartTime, CS.EndTime, CS.WeekDay,
+	StudentID = 0, CO.CourseID, DayOfWeek = @WeekDay
+	FROM ClassSessions CS
+	INNER JOIN ClassRooms CR ON CS.ClassRoomID = CR.ClassRoomID
+	INNER JOIN Instructors I ON CS.InstructorID = I.InstructorID
+	INNER JOIN Courses CO ON CS.CourseID = CO.CourseID
+	WHERE CS.InstructorID = @InstructorID
+	AND CS.WeekDay = @WeekDay
+	ORDER BY CS.StartTime
+END
