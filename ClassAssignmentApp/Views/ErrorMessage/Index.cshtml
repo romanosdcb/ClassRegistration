@@ -1,0 +1,35 @@
+﻿@model ClassAssignmentApp.Models.ErrorMessageModel
+
+@{
+    bool AddressIncluded = false;
+
+    if (Model.AddressDescription != null && Model.AddressDescription.Length > 0)
+        AddressIncluded = true;
+}
+
+<div style="width: 900px; height: 500px; margin-left:0px; background-color:wheat; border-style:solid; border-width:1px;">
+    <div style="text-align:center; font-size:50px;">
+        Error Condition !
+    </div>
+
+    <div style="margin-left:20px;">
+        <table style="font-size:30px;">
+            <tr>
+                <td style="width:100px; text-align:right; padding-right:10px;">
+                    Error:
+                </td>
+                <td style="width:800px; text-align:left; color:red;">
+                    @Model.ErrorMessage
+                </td>
+            </tr>
+            <tr class="@(AddressIncluded == true ? "display-contents" : "display-none")">
+                <td style="text-align:right; padding-right:10px;">
+                    Location:
+                </td>
+                <td style="text-align:left;">
+                    @Model.AddressDescription
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

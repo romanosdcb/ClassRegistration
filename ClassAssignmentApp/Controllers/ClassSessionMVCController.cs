@@ -88,6 +88,364 @@ namespace ClassAssignmentApp.Controllers
             return View(StudentSessionMV);
         }
 
+        [HttpPost]
+        public IActionResult ClassSessionsIndex(ClassSessionMVMaint ClassSessionMV, string? command)
+        {
+            ClassSessionMV.ShowScreenMessage = false;
+            RefreshScreen(ClassSessionMV);
+
+            if (command != null)
+            {
+                string FullCommand = command;
+            }
+
+            switch (command)
+            {
+                case "NewEntry":
+                    if (ClassSessionMV.StartTime == null || ClassSessionMV.EndTime == null)
+                    {
+                        ClassSessionMV.ErrorCondition = true;
+                        ClassSessionMV.ErrorMessage = "Start and End Times are required";
+                        return View(ClassSessionMV);
+                    }
+
+                    if (ClassSessionMV.StartTime > ClassSessionMV.EndTime)
+                    {
+                        ClassSessionMV.ErrorCondition = true;
+                        ClassSessionMV.ErrorMessage = "Start Time must be before End Time";
+                        return View(ClassSessionMV);
+                    }
+
+                    if (ClassSessionMV.InstructorID == null || ClassSessionMV.InstructorID < 1)
+                    {
+                        ClassSessionMV.ErrorCondition = true;
+                        ClassSessionMV.ErrorMessage = "Instructor ID is missing";
+                        return View(ClassSessionMV);
+                    }
+
+                    if (ClassSessionMV.WeekDay == null || ClassSessionMV.WeekDay == "")
+                    {
+                        ClassSessionMV.ErrorCondition = true;
+                        ClassSessionMV.ErrorMessage = "WeekDay is missing";
+                        return View(ClassSessionMV);
+                    }
+
+                    string InstructorCallSequence = _client.BaseAddress + "/ClassSession/"
+                        + ClassSessionMV.InstructorID.ToString() + "/"
+                        + ClassSessionMV.WeekDay + "/"
+                        + ClassSessionMV.StartTime.ToString() + "/"
+                        + ClassSessionMV.EndTime.ToString() + "/Instructor";
+                    HttpResponseMessage InstructorConflicts = _client.GetAsync(InstructorCallSequence).Result;
+
+                    string ClassRoomCallSequence = _client.BaseAddress + "/ClassSession/"
+                        + ClassSessionMV.ClassRoomID.ToString() + "/"
+                        + ClassSessionMV.WeekDay + "/"
+                        + ClassSessionMV.StartTime.ToString() + "/"
+                        + ClassSessionMV.EndTime.ToString() + "/ClassRoom";
+                    HttpResponseMessage ClassRoomConflicts = _client.GetAsync(ClassRoomCallSequence).Result;
+
+
+                    if (InstructorConflicts.IsSuccessStatusCode && ClassRoomConflicts.IsSuccessStatusCode)
+                    {
+                        //var dataList = InstructorConflicts.Content.ReadAsAsync<IList<WorkingDailyConflicts>>();
+                        //List<WorkingDailyConflicts> ConflictList = dataList.Result.ToList();
+
+                        //if (ConflictList.Count == 1)
+                        //{
+                        //    ClassSessionMV.ErrorCondition = true;
+                        //    ClassSessionMV.ErrorMessage = "Conflicts with instructor session: "
+                        //        + ConflictList[0].StartTime.ToString() + " - " +
+                        //        ConflictList[0].EndTime.ToString();
+                        //    return View(ClassSessionMV);
+                        //}
+                        //else if (ConflictList.Count > 1)
+                        //    {
+                        //    ClassSessionMV.ErrorCondition = true;
+                        //    ClassSessionMV.ErrorMessage = "Multiple session conflicts";
+                        //     return View(ClassSessionMV);
+                        //}
+                        //----------------------------------------------------------------------
+                        var InstructorDataList = InstructorConflicts.Content.ReadAsAsync<IList<WorkingDailyConflicts>>();
+                        List<WorkingDailyConflicts> InstructorConflictList = InstructorDataList.Result.ToList();
+
+                        var ClassRoomDataList = ClassRoomConflicts.Content.ReadAsAsync<IList<WorkingDailyConflicts>>();
+                        List<WorkingDailyConflicts> ClassRoomConflictList = ClassRoomDataList.Result.ToList();
+
+                        if (InstructorConflictList.Count > 0 || ClassRoomConflictList.Count > 0)
+                        { //At least one conflict - either Instructor or Classroom
+                            if (InstructorConflictList.Count == 1 && ClassRoomConflictList.Count == 0)
+                            { //Just one conflict with Instructor schedule
+                                ClassSessionMV.ErrorCondition = true;
+                                ClassSessionMV.ErrorMessage = "Conflicts with instructor session: "
+                                    + InstructorConflictList[0].StartTime.ToString() + " - " +
+                                    InstructorConflictList[0].EndTime.ToString();
+                                return View(ClassSessionMV);
+                            }
+                            else if (InstructorConflictList.Count == 0 && ClassRoomConflictList.Count == 1)
+                            { //Just one conflict with Classroom schedule
+                                ClassSessionMV.ErrorCondition = true;
+                                ClassSessionMV.ErrorMessage = "Conflicts with class room session: "
+                                    + ClassRoomConflictList[0].StartTime.ToString() + " - " +
+                                    ClassRoomConflictList[0].EndTime.ToString();
+                                return View(ClassSessionMV);
+                            }
+                            else
+                            { //Multiple schedule conflicts for Instructor and/or Classroom
+                                ClassSessionMV.ErrorCondition = true;
+                                ClassSessionMV.ErrorMessage = "Multiple session conflicts";
+                                return View(ClassSessionMV);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ClassSessionMV.ErrorCondition = true;
+                        ClassSessionMV.ErrorMessage = "System Error: Unable to validate entry";
+                        return View(ClassSessionMV);
+                    }
+
+                    ClassSession REC1 = new ClassSession();
+                    ClassSession2 REC = new ClassSession2();
+
+                    REC.WeekDay = ClassSessionMV.WeekDay;
+                    //REC.StartTime = (TimeOnly)ClassSessionMV.StartTime;
+                    //REC.EndTime = (TimeOnly)ClassSessionMV.EndTime;
+                    string sStartTime = ClassSessionMV.StartTime.ToString();
+                    string sEndTime = ClassSessionMV.EndTime.ToString();
+                    string sConvertedStartTime = ConvertTODtoString((TimeOnly)ClassSessionMV.StartTime);
+                    string sConvertedEndTime = ConvertTODtoString((TimeOnly)ClassSessionMV.EndTime);
+
+                    //REC.StartTime = "09:00:00";
+                    //REC.EndTime = "09:50:00";
+                    REC.StartTime = sConvertedStartTime;
+                    REC.EndTime = sConvertedEndTime;
+                    REC.InstructorID = ClassSessionMV.InstructorID;
+                    REC.ClassRoomID = ClassSessionMV.ClassRoomID;
+                    REC.CourseID = ClassSessionMV.CourseID;
+                    HttpResponseMessage response = _client.PostAsJsonAsync(_client.BaseAddress + "/ClassSession/", REC).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        ClassSessionMV.ErrorCondition = false;
+                        ClassSessionMV.ShowScreenMessage = true;
+                        ClassSessionMV.ErrorMessage = "";
+                        ClassSessionMV.ScreenMessage = "Session Added!";
+                        return RedirectToAction("ClassSessionsIndex", new
+                        {
+                            InstructorID = (int)ClassSessionMV.InstructorID,
+                            ClassRoomID = (int)ClassSessionMV.ClassRoomID,
+                            CourseID = (int)ClassSessionMV.CourseID,
+                            WeekDay = (string)ClassSessionMV.WeekDay,
+                            BuildingNumber = (int)ClassSessionMV.BuildingNumber,
+                            ScreenMessage = (string)ClassSessionMV.ScreenMessage
+                        });
+                    }
+                    else
+                    {
+                        ClassSessionMV.ErrorCondition = true;
+                        ClassSessionMV.ShowScreenMessage = false;
+                        ClassSessionMV.ErrorMessage = "Error: Unable to add session!";
+                        ClassSessionMV.ScreenMessage = "";
+                    }
+
+                    return View(ClassSessionMV);
+
+                default:
+                    break;
+            }
+
+            return View(ClassSessionMV);
+        }
+
+        [HttpPost]
+        public IActionResult StudentSessionsIndex(StudentSessionMVMaint StudentSessionMV, string? command)
+        {
+            RefreshStudentScreen(StudentSessionMV);
+
+            //if (StudentSessionMV.StudentID > 0)
+            //{
+            //    for (int i = 0; i < StudentSessionMV.StudentSelectList.Count; i++)
+            //    {
+            //        if (StudentSessionMV.StudentSelectList[i].Value == StudentSessionMV.StudentID.ToString())
+            //        {
+            //            StudentSessionMV.StudentName = StudentSessionMV.StudentSelectList[i].Text;
+            //            break;
+            //        }
+            //    }
+            //}
+
+            //if (StudentSessionMV.CourseID > 0)
+            //{
+            //    for (int i = 0; i < StudentSessionMV.CourseSelectList.Count; i++)
+            //    {
+            //        if (StudentSessionMV.CourseSelectList[i].Value == StudentSessionMV.CourseID.ToString())
+            //        {
+            //            StudentSessionMV.CourseName = StudentSessionMV.CourseSelectList[i].Text;
+            //            break;
+            //        }
+            //    }
+            //}
+            StudentSessionMV.ShowScreenMessage = false;
+            return View(StudentSessionMV);
+        }
+
+        private string ConvertTODtoString(TimeOnly TOD)
+        {
+            string TODasString = "";
+            string sTOD = TOD.ToString();
+            string[] TimeArray = sTOD.Split(':', ' ');
+            int HH = Convert.ToInt32(TimeArray[0]);
+            int MM = Convert.ToInt32(TimeArray[1]);
+            string AM_PM = TimeArray[TimeArray.Length - 1];
+
+            if (AM_PM == "PM" && HH < 12) HH += 12;
+            TODasString = String.Format("{0:00}:{1:00}:00", HH, MM);
+            return TODasString;
+        }
+
+
+        [HttpGet]
+        public IActionResult FileUpdate(int? InstructorID, int? ClassRoomID, int? CourseID, string? WeekDay,
+            int? BuildingNumber, int? id)
+        {
+            //First see if any students have been assigned to this session before doing the Delete
+            string StudentListSEQ = _client.BaseAddress + "/StudentClassSession/" + id.ToString()
+                + "/StudentList/AAA/BBB";
+            HttpResponseMessage MessageResponse = _client.GetAsync(StudentListSEQ).Result;
+
+            if (MessageResponse.IsSuccessStatusCode)
+            {
+                var StudentData = MessageResponse.Content.ReadAsAsync<IList<StudentClassSession>>();
+                List<StudentClassSession> DataList = StudentData.Result.ToList();
+                if (DataList.Count > 0)
+                {
+                    string ReturnMessage = "Cannot delete - Students Already Assigned!";
+                    return RedirectToAction("ClassSessionsIndex", new
+                    {
+                        InstructorID = (int)InstructorID,
+                        ClassRoomID = (int)ClassRoomID,
+                        CourseID = (int)CourseID,
+                        WeekDay = (string)WeekDay,
+                        BuildingNumber = (int)BuildingNumber,
+                        ErrorMessage = ReturnMessage
+                    });
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
+            HttpResponseMessage response = _client.DeleteAsync(_client.BaseAddress + "/ClassSession/" + id.ToString()).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction("ClassSessionsIndex", new
+                {
+                    InstructorID = (int)InstructorID,
+                    ClassRoomID = (int)ClassRoomID,
+                    CourseID = (int)CourseID,
+                    WeekDay = (string)WeekDay,
+                    BuildingNumber = (int)BuildingNumber
+                });
+            }
+            else
+            {
+                //return NotFound();
+                return RedirectToAction("Index",
+                 new RouteValueDictionary(new
+                 {
+                     controller = "ErrorMessage",
+                     action = "Index",
+                     ErrorMessage = "Unsuccessful Delete Record Attempt",
+                     AddressDescription = "at Class Session Maintenance"
+                 }));
+            }
+        }
+
+        [HttpGet]
+        public IActionResult RemoveCourseAssignment(int? StudentClassSessionID, int? StudentID)
+        {
+            //string InstructorID = ClassSessionMV.InstructorID.ToString();
+
+            HttpResponseMessage response = _client.DeleteAsync(_client.BaseAddress + "/StudentClassSession/" + StudentClassSessionID.ToString()).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction("StudentSessionsIndex", new
+                {
+                    StudentID = (int)StudentID,
+                    CourseID = 0,
+                    ScreenMessage = "Course Removed"
+                });
+            }
+            else
+            {
+                return RedirectToAction("Index",
+                 new RouteValueDictionary(new
+                 {
+                     controller = "ErrorMessage",
+                     action = "Index",
+                     ErrorMessage = "Unsuccessful Remove Course Attempt",
+                     AddressDescription = "at Class Session Maintenance"
+                 }));
+
+                //return NotFound(); 
+            }
+
+        }
+
+        [HttpGet]
+        public IActionResult RegisterStudent(int? StudentID, int? CourseID, int? ClassSessionID)
+        {
+            if (StudentID != null && CourseID != null && ClassSessionID != null)
+            {
+                StudentID = (int)StudentID;
+                CourseID = (int)CourseID;
+                StudentClassSession obj = new StudentClassSession();
+                obj.StudentID = (int)StudentID;
+                obj.ClassSessionID = (int)ClassSessionID;
+
+                HttpResponseMessage response = _client.PostAsJsonAsync(_client.BaseAddress + "/StudentClassSession/", obj).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("StudentSessionsIndex", new
+                    {
+                        StudentID = (int)StudentID,
+                        CourseID = 0,
+                        ScreenMessage = "Course Added"
+                    });
+                }
+                else
+                {
+                    return RedirectToAction("Index",
+                     new RouteValueDictionary(new
+                     {
+                         controller = "ErrorMessage",
+                         action = "Index",
+                         ErrorMessage = "Unsuccessful Student Registration Attempt",
+                         AddressDescription = "at Class Session Maintenance"
+                     }));
+
+                    //return NotFound(); 
+                }
+            }
+            else
+            {
+                return RedirectToAction("Index",
+                 new RouteValueDictionary(new
+                 {
+                     controller = "ErrorMessage",
+                     action = "Index",
+                     ErrorMessage = "Unsuccessful Student Registration Attempt",
+                     AddressDescription = "at Class Session Maintenance"
+                 }));
+
+                //return NotFound();
+            }
+        }
+
         private static List<WorkingDailySchedule> ReturnBlankWorkingSchedule()
         {
             List<WorkingDailySchedule> InstSchedBlankList = new List<WorkingDailySchedule>();
@@ -372,321 +730,31 @@ namespace ClassAssignmentApp.Controllers
             }
         }
 
-        [HttpPost]
-            public IActionResult ClassSessionsIndex(ClassSessionMVMaint ClassSessionMV, string? command)
-        {
-            ClassSessionMV.ShowScreenMessage = false;
-            RefreshScreen(ClassSessionMV);
-
-            if (command != null)
-            {
-                string FullCommand = command;
-            }    
-
-            switch (command)
-            {
-                case "NewEntry":
-                    if (ClassSessionMV.StartTime == null || ClassSessionMV.EndTime == null)
-                    {
-                        ClassSessionMV.ErrorCondition = true;
-                        ClassSessionMV.ErrorMessage = "Start and End Times are required";
-                        return View(ClassSessionMV);
-                    }
-
-                    if (ClassSessionMV.StartTime > ClassSessionMV.EndTime)
-                    {
-                        ClassSessionMV.ErrorCondition = true;
-                        ClassSessionMV.ErrorMessage = "Start Time must be before End Time";
-                        return View(ClassSessionMV);
-                    }
-
-                    if (ClassSessionMV.InstructorID == null || ClassSessionMV.InstructorID < 1)
-                    {
-                        ClassSessionMV.ErrorCondition = true;
-                        ClassSessionMV.ErrorMessage = "Instructor ID is missing";
-                        return View(ClassSessionMV);
-                    }
-
-                    if (ClassSessionMV.WeekDay == null || ClassSessionMV.WeekDay == "")
-                    {
-                        ClassSessionMV.ErrorCondition = true;
-                        ClassSessionMV.ErrorMessage = "WeekDay is missing";
-                        return View(ClassSessionMV);
-                    }
-
-                    string InstructorCallSequence = _client.BaseAddress + "/ClassSession/"
-                        + ClassSessionMV.InstructorID.ToString() + "/"
-                        + ClassSessionMV.WeekDay + "/"
-                        + ClassSessionMV.StartTime.ToString() + "/"
-                        + ClassSessionMV.EndTime.ToString() + "/Instructor";
-                    HttpResponseMessage InstructorConflicts = _client.GetAsync(InstructorCallSequence).Result;
-
-                    string ClassRoomCallSequence = _client.BaseAddress + "/ClassSession/"
-                        + ClassSessionMV.ClassRoomID.ToString() + "/"
-                        + ClassSessionMV.WeekDay + "/"
-                        + ClassSessionMV.StartTime.ToString() + "/"
-                        + ClassSessionMV.EndTime.ToString() + "/ClassRoom";
-                    HttpResponseMessage ClassRoomConflicts = _client.GetAsync(ClassRoomCallSequence).Result;
 
 
-                    if (InstructorConflicts.IsSuccessStatusCode && ClassRoomConflicts.IsSuccessStatusCode)
-                    {
-                        //var dataList = InstructorConflicts.Content.ReadAsAsync<IList<WorkingDailyConflicts>>();
-                        //List<WorkingDailyConflicts> ConflictList = dataList.Result.ToList();
-
-                        //if (ConflictList.Count == 1)
-                        //{
-                        //    ClassSessionMV.ErrorCondition = true;
-                        //    ClassSessionMV.ErrorMessage = "Conflicts with instructor session: "
-                        //        + ConflictList[0].StartTime.ToString() + " - " +
-                        //        ConflictList[0].EndTime.ToString();
-                        //    return View(ClassSessionMV);
-                        //}
-                        //else if (ConflictList.Count > 1)
-                        //    {
-                        //    ClassSessionMV.ErrorCondition = true;
-                        //    ClassSessionMV.ErrorMessage = "Multiple session conflicts";
-                        //     return View(ClassSessionMV);
-                        //}
-                        //----------------------------------------------------------------------
-                        var InstructorDataList = InstructorConflicts.Content.ReadAsAsync<IList<WorkingDailyConflicts>>();
-                        List<WorkingDailyConflicts> InstructorConflictList = InstructorDataList.Result.ToList();
-
-                        var ClassRoomDataList = ClassRoomConflicts.Content.ReadAsAsync<IList<WorkingDailyConflicts>>();
-                        List<WorkingDailyConflicts> ClassRoomConflictList = ClassRoomDataList.Result.ToList();
-
-                        if (InstructorConflictList.Count > 0 || ClassRoomConflictList.Count > 0)
-                        { //At least one conflict - either Instructor or Classroom
-                            if (InstructorConflictList.Count == 1 &&  ClassRoomConflictList.Count == 0)
-                            { //Just one conflict with Instructor schedule
-                                ClassSessionMV.ErrorCondition = true;
-                                ClassSessionMV.ErrorMessage = "Conflicts with instructor session: "
-                                    + InstructorConflictList[0].StartTime.ToString() + " - " +
-                                    InstructorConflictList[0].EndTime.ToString();
-                                return View(ClassSessionMV);
-                            }
-                            else if (InstructorConflictList.Count == 0 && ClassRoomConflictList.Count == 1)
-                            { //Just one conflict with Classroom schedule
-                                ClassSessionMV.ErrorCondition = true;
-                                ClassSessionMV.ErrorMessage = "Conflicts with class room session: "
-                                    + ClassRoomConflictList[0].StartTime.ToString() + " - " +
-                                    ClassRoomConflictList[0].EndTime.ToString();
-                                return View(ClassSessionMV);
-                            }
-                            else
-                            { //Multiple schedule conflicts for Instructor and/or Classroom
-                                ClassSessionMV.ErrorCondition = true;
-                                ClassSessionMV.ErrorMessage = "Multiple session conflicts";
-                                return View(ClassSessionMV);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        ClassSessionMV.ErrorCondition = true;
-                        ClassSessionMV.ErrorMessage = "System Error: Unable to validate entry";
-                        return View(ClassSessionMV);
-                    }
-
-                    ClassSession REC1 = new ClassSession();
-                    ClassSession2 REC = new ClassSession2();
-                
-                    REC.WeekDay = ClassSessionMV.WeekDay;
-                    //REC.StartTime = (TimeOnly)ClassSessionMV.StartTime;
-                    //REC.EndTime = (TimeOnly)ClassSessionMV.EndTime;
-                    string sStartTime = ClassSessionMV.StartTime.ToString();
-                    string sEndTime = ClassSessionMV.EndTime.ToString();
-                    string sConvertedStartTime = ConvertTODtoString((TimeOnly)ClassSessionMV.StartTime);
-                    string sConvertedEndTime = ConvertTODtoString((TimeOnly)ClassSessionMV.EndTime);
-
-                    //REC.StartTime = "09:00:00";
-                    //REC.EndTime = "09:50:00";
-                    REC.StartTime = sConvertedStartTime;
-                    REC.EndTime = sConvertedEndTime;
-                    REC.InstructorID = ClassSessionMV.InstructorID;
-                    REC.ClassRoomID = ClassSessionMV.ClassRoomID;
-                    REC.CourseID = ClassSessionMV.CourseID;
-                    HttpResponseMessage response = _client.PostAsJsonAsync(_client.BaseAddress + "/ClassSession/", REC).Result;
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        ClassSessionMV.ErrorCondition = false;
-                        ClassSessionMV.ShowScreenMessage = true;
-                        ClassSessionMV.ErrorMessage = "";
-                        ClassSessionMV.ScreenMessage = "Session Added!";
-                        return RedirectToAction("ClassSessionsIndex", new
-                        {
-                            InstructorID = (int)ClassSessionMV.InstructorID,
-                            ClassRoomID = (int)ClassSessionMV.ClassRoomID,
-                            CourseID = (int)ClassSessionMV.CourseID,
-                            WeekDay = (string)ClassSessionMV.WeekDay,
-                            BuildingNumber = (int)ClassSessionMV.BuildingNumber,
-                            ScreenMessage = (string)ClassSessionMV.ScreenMessage
-                        });
-                    }
-                    else
-                    {
-                        ClassSessionMV.ErrorCondition = true;
-                        ClassSessionMV.ShowScreenMessage = false;
-                        ClassSessionMV.ErrorMessage = "Error: Unable to add session!";
-                        ClassSessionMV.ScreenMessage = "";
-                    }
-
-                    return View(ClassSessionMV);
-
-                default:
-                    break;
-            }
-
-            return View(ClassSessionMV);
-        }
-
-        [HttpPost]
-        public IActionResult StudentSessionsIndex(StudentSessionMVMaint StudentSessionMV, string? command)
-        {
-            RefreshStudentScreen(StudentSessionMV);
-
-            //if (StudentSessionMV.StudentID > 0)
-            //{
-            //    for (int i = 0; i < StudentSessionMV.StudentSelectList.Count; i++)
-            //    {
-            //        if (StudentSessionMV.StudentSelectList[i].Value == StudentSessionMV.StudentID.ToString())
-            //        {
-            //            StudentSessionMV.StudentName = StudentSessionMV.StudentSelectList[i].Text;
-            //            break;
-            //        }
-            //    }
-            //}
-
-            //if (StudentSessionMV.CourseID > 0)
-            //{
-            //    for (int i = 0; i < StudentSessionMV.CourseSelectList.Count; i++)
-            //    {
-            //        if (StudentSessionMV.CourseSelectList[i].Value == StudentSessionMV.CourseID.ToString())
-            //        {
-            //            StudentSessionMV.CourseName = StudentSessionMV.CourseSelectList[i].Text;
-            //            break;
-            //        }
-            //    }
-            //}
-            StudentSessionMV.ShowScreenMessage = false;
-            return View(StudentSessionMV);
-        }
-
-        private string ConvertTODtoString(TimeOnly TOD)
-        {
-            string TODasString = "";
-            string sTOD = TOD.ToString();
-            string[] TimeArray = sTOD.Split( ':', ' ');
-            int HH = Convert.ToInt32(TimeArray[0]);
-            int MM = Convert.ToInt32(TimeArray[1]);
-            string AM_PM = TimeArray[TimeArray.Length - 1];
-
-            if (AM_PM == "PM" && HH < 12) HH += 12;
-            TODasString = String.Format("{0:00}:{1:00}:00", HH, MM);
-            return TODasString;
-        }
 
 
-        [HttpGet]
-        public IActionResult FileUpdate(int? InstructorID, int? ClassRoomID, int? CourseID, string? WeekDay,
-            int? BuildingNumber, int? id)
-        {
-            //First see if any students have been assigned to this session before doing the Delete
-            string StudentListSEQ = _client.BaseAddress + "/StudentClassSession/" + id.ToString()
-                + "/StudentList/AAA/BBB";
-            HttpResponseMessage MessageResponse = _client.GetAsync(StudentListSEQ).Result;
 
-            if (MessageResponse.IsSuccessStatusCode)
-            {
-                var StudentData = MessageResponse.Content.ReadAsAsync<IList<StudentClassSession>>();
-                List<StudentClassSession> DataList = StudentData.Result.ToList();
-                if (DataList.Count > 0)
-                {
-                    string ReturnMessage = "Cannot delete - Students Already Assigned!";
-                    return RedirectToAction("ClassSessionsIndex", new
-                    {
-                        InstructorID = (int)InstructorID,
-                        ClassRoomID = (int)ClassRoomID,
-                        CourseID = (int)CourseID,
-                        WeekDay = (string)WeekDay,
-                        BuildingNumber = (int)BuildingNumber,
-                        ErrorMessage = ReturnMessage
-                    });
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
 
-            HttpResponseMessage response = _client.DeleteAsync(_client.BaseAddress + "/ClassSession/" + id.ToString()).Result;
 
-            if (response.IsSuccessStatusCode)
-            {
-                return RedirectToAction("ClassSessionsIndex", new {InstructorID = (int)InstructorID,
-                ClassRoomID = (int)ClassRoomID, CourseID=(int)CourseID, WeekDay=(string)WeekDay,
-                BuildingNumber=(int)BuildingNumber});
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
 
-        [HttpGet]
-        public IActionResult RemoveCourseAssignment(int? StudentClassSessionID, int? StudentID)
-        {
-            //string InstructorID = ClassSessionMV.InstructorID.ToString();
 
-            HttpResponseMessage response = _client.DeleteAsync(_client.BaseAddress + "/StudentClassSession/" + StudentClassSessionID.ToString()).Result;
 
-            if (response.IsSuccessStatusCode)
-            {
-                return RedirectToAction("StudentSessionsIndex", new
-                {
-                    StudentID = (int)StudentID,
-                    CourseID = 0,
-                    ScreenMessage = "Course Removed"
-                });
-            }
-            else
-            { 
-            return NotFound(); 
-            }
 
-        }
 
-        [HttpGet]
-        public IActionResult RegisterStudent(int? StudentID, int? CourseID, int? ClassSessionID)
-        {
-            if (StudentID != null && CourseID != null  && ClassSessionID != null)
-            {
-                StudentID = (int)StudentID;
-                CourseID = (int)CourseID;
-                StudentClassSession obj = new StudentClassSession();
-                obj.StudentID = (int)StudentID;
-                obj.ClassSessionID = (int)ClassSessionID;
 
-                HttpResponseMessage response = _client.PostAsJsonAsync(_client.BaseAddress + "/StudentClassSession/", obj).Result;
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return RedirectToAction("StudentSessionsIndex", new
-                    {
-                        StudentID = (int)StudentID,
-                        CourseID = 0,
-                        ScreenMessage = "Course Added"
-                    });
-                }
-                else
-                    { return NotFound(); }
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
+
+
+
+
+
+
+
+
+
+
+
 
 
         private StudentSessionMVMaint GetAllStudentLists(StudentSessionMVMaint obj)

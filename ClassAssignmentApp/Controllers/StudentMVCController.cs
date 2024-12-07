@@ -34,29 +34,6 @@ namespace ClassAssignmentApp.Controllers
             return View(StudentMV);
         }
 
-        private StudentMVMaint CommonIndex(string? LastNameSelection)
-        {
-            StudentMVMaint StudentMV = new StudentMVMaint();
-            List<Student> StudentList = new List<Student>();
-
-
-            HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/Student").Result;
-
-            if (response.IsSuccessStatusCode)
-            {
-                var data = response.Content.ReadAsAsync<IList<Student>>();
-                StudentMV.StudentList = data.Result.ToList();
-
-                if (LastNameSelection != null && LastNameSelection != "")
-                {
-                    var SelectedStudentData = data.Result.Where(x => x.LastName.Contains(LastNameSelection));
-                    StudentMV.StudentList = SelectedStudentData.ToList();
-                }
-            }
-
-            return StudentMV;
-        }
-
         [HttpGet]
         public IActionResult Edit(int? id)
         {
@@ -134,22 +111,6 @@ namespace ClassAssignmentApp.Controllers
             }
 
             return View(StudentMV);
-        }
-
-        private List<StateREC> FillStateList()
-        {
-            List<StateREC> stateList = new List<StateREC>();
-
-            stateList.Clear();
-            HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/UnitedState").Result;
-
-            if (response.IsSuccessStatusCode)
-            {
-                var data = response.Content.ReadAsAsync<IList<StateREC>>();
-                stateList = data.Result.ToList();
-            }
-
-            return stateList;
         }
 
         [HttpPost]
@@ -288,5 +249,45 @@ namespace ClassAssignmentApp.Controllers
 
             }
         }
+
+        private StudentMVMaint CommonIndex(string? LastNameSelection)
+        {
+            StudentMVMaint StudentMV = new StudentMVMaint();
+            List<Student> StudentList = new List<Student>();
+
+
+            HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/Student").Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var data = response.Content.ReadAsAsync<IList<Student>>();
+                StudentMV.StudentList = data.Result.ToList();
+
+                if (LastNameSelection != null && LastNameSelection != "")
+                {
+                    var SelectedStudentData = data.Result.Where(x => x.LastName.Contains(LastNameSelection));
+                    StudentMV.StudentList = SelectedStudentData.ToList();
+                }
+            }
+
+            return StudentMV;
+        }
+
+        private List<StateREC> FillStateList()
+        {
+            List<StateREC> stateList = new List<StateREC>();
+
+            stateList.Clear();
+            HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/UnitedState").Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var data = response.Content.ReadAsAsync<IList<StateREC>>();
+                stateList = data.Result.ToList();
+            }
+
+            return stateList;
+        }
+
     }
 }

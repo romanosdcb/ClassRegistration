@@ -174,21 +174,21 @@
                                 <div class="d-flex justify-content-between">
                                     <button type="submit" name="command" value="Create"
                                             class='@(Model.OperationMode == "ADD" ? "show-button" : "hide-button") btn btn-primary'
-                                            onclick="return Confirm()">
+                                            onclick="return Confirm('add this record')">
                                             Add
                                     </button>
                                     &nbsp;
 
                                     <button type="submit" name="command" value="Edit"
                                             class='@(Model.OperationMode == "CHANGEDELETE" ? "show-button" : "hide-button") btn btn-primary'
-                                            onclick="return Confirm()">
+                                            onclick="return Confirm('update this record')">
                                             Update
                                     </button>
                                     &nbsp;
 
                                     <button type="submit" name="command" value="Delete"
                                             class='@(Model.OperationMode == "CHANGEDELETE" ? "show-button" : "hide-button") btn btn-primary'
-                                            onclick="return Confirm()">
+                                            onclick="return Confirm('delete this record')">
                                             Delete
                                     </button>
                                     &nbsp;
@@ -215,8 +215,8 @@
 </div>
 
 <script type="text/javascript">
-    function Confirm() { 
-        if (confirm('Are you sure?')) {
+    function Confirm(question) { 
+        if (confirm('Are you sure you want to ' + question + '?')) {
             return true;
         } else {
             return false;

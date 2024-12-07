@@ -148,22 +148,6 @@ namespace ClassAssignmentApp.Controllers
             return View(InstructorMV);
         }
 
-        private List<StateREC> FillStateList()
-        {
-            List<StateREC> stateList = new List<StateREC>();
-
-            stateList.Clear();
-            HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/UnitedState").Result;
-
-            if (response.IsSuccessStatusCode)
-            {
-                var data = response.Content.ReadAsAsync<IList<StateREC>>();
-                stateList = data.Result.ToList();
-            }
-
-            return stateList;
-        }
-
         [HttpPost]
         public IActionResult Edit(InstructorMVMaint obj, string command)
         {
@@ -213,7 +197,15 @@ namespace ClassAssignmentApp.Controllers
                         }
                         else
                         {
-                            return NotFound();
+                            return RedirectToAction("Index",
+                             new RouteValueDictionary(new
+                             {
+                                 controller = "ErrorMessage",
+                                 action = "Index",
+                                 ErrorMessage = "Unsuccessful Add Record Attempt",
+                                 AddressDescription = "at Instructor Maintenance"
+                             }));
+                            //return NotFound();
                         }
 
                     case "Edit":
@@ -225,7 +217,15 @@ namespace ClassAssignmentApp.Controllers
                         }
                         else
                         {
-                            return NotFound();
+                            return RedirectToAction("Index",
+                             new RouteValueDictionary(new
+                             {
+                                 controller = "ErrorMessage",
+                                 action = "Index",
+                                 ErrorMessage = "Unsuccessful Update Record Attempt",
+                                 AddressDescription = "at Instructor Maintenance"
+                             }));
+                            //return NotFound();
                         }
 
 
@@ -238,7 +238,15 @@ namespace ClassAssignmentApp.Controllers
                         }
                         else
                         {
-                            return NotFound();
+                            return RedirectToAction("Index",
+                             new RouteValueDictionary(new
+                             {
+                                 controller = "ErrorMessage",
+                                 action = "Index",
+                                 ErrorMessage = "Unsuccessful Delete Record Attempt",
+                                 AddressDescription = "at Instructor Maintenance"
+                             }));
+                            //return NotFound();
                         }
 
                     case "Cancel":
@@ -262,13 +270,29 @@ namespace ClassAssignmentApp.Controllers
                         //break;
                 }
 
-                return NotFound();
+                //return NotFound();
 
             }
             else
             {
                 return View(obj);
             }
+        }
+
+        private List<StateREC> FillStateList()
+        {
+            List<StateREC> stateList = new List<StateREC>();
+
+            stateList.Clear();
+            HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/UnitedState").Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var data = response.Content.ReadAsAsync<IList<StateREC>>();
+                stateList = data.Result.ToList();
+            }
+
+            return stateList;
         }
     }
 }

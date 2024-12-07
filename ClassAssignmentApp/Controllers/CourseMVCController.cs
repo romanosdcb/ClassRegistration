@@ -158,13 +158,166 @@ namespace ClassAssignmentApp.Controllers
                 }
                 else
                 {
-                    return NotFound();
+                    return RedirectToAction("Index",
+                     new RouteValueDictionary(new
+                     {
+                         controller = "ErrorMessage",
+                         action = "Index",
+                         ErrorMessage = "Unsuccessful Add Record Attempt",
+                         AddressDescription = "at Course Maintenance"
+                     }));
+
+                    //return NotFound();
                 }
             }
             else
             {
                 return View(obj);
             }
+        }
+
+        [HttpPost]
+        public IActionResult FileUpdate(int id, CourseMVMaint MVobj, string command)
+        {
+            bool ErrorCondition = false;
+            Course obj = new Course();
+            CourseData DataOBJ = new CourseData();
+            if (MVobj.CourseID != null) obj.CourseID = MVobj.CourseID;
+            obj.Title = MVobj.Title;
+            obj.Department = MVobj.Department;
+            obj.CreditHours = (MVobj.CreditHours == null ? 0 : (int)MVobj.CreditHours);
+            obj.PrerequisiteCourseID = MVobj.PrerequisiteCourseID;
+            MVobj.ErrorCondition = false;
+            if (obj.Title == null || obj.Title == string.Empty || obj.Title.Length < 5) ErrorCondition = true;
+            if (obj.Department == null || obj.Department == string.Empty) ErrorCondition = true;
+            if (obj.CreditHours == null || obj.CreditHours == 0) ErrorCondition = true;
+            int ErrorCount = 0;
+
+            switch (command)
+            {
+                case "Create":
+                    if (ErrorCondition)
+                    {
+                        DataOBJ = LoadCourseDataOBJ(obj, "ADD");
+                        string SER = JsonConvert.SerializeObject(DataOBJ);  //Conversion tool uses "," to separate fields and ":" to separate field/value pairs
+                        TempData["CourseREC"] = SER; // Store in session value
+                        return RedirectToAction("Index", new { Id = 0, SelectedDepartment = "", pCourseDataOBJ = DataOBJ });
+                    }
+
+                    if (ModelState.IsValid)
+                    {
+                        //_db.DiaryEntries.Add(obj);
+                        //_db.SaveChanges();
+                        HttpResponseMessage response = _client.PostAsJsonAsync(_client.BaseAddress + "/Course/", obj).Result;
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index");
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index",
+                             new RouteValueDictionary(new
+                             {
+                                 controller = "ErrorMessage",
+                                 action = "Index",
+                                 ErrorMessage = "Unsuccessful Add Record Attempt",
+                                 AddressDescription = "at Course Maintenance"
+                             }));
+                            //return NotFound();
+                        }
+                    }
+                    else
+                    {
+                        return View(MVobj);
+                    }
+
+                case "Edit":
+                    if (ErrorCondition)
+                    {
+                        ModelState.AddModelError("Course", "Invalid data");
+                        DataOBJ = LoadCourseDataOBJ(obj, "CHANGEDELETE");
+                        string SER = JsonConvert.SerializeObject(DataOBJ);
+                        TempData["CourseREC"] = SER; // Store in session value
+                        return RedirectToAction("Index", new { Id = DataOBJ.CourseID, SelectedDepartment = "", pCourseDataOBJ = DataOBJ });
+                    }
+
+                    if (ModelState.IsValid)
+                    {
+                        if (obj.CourseID < 1) obj.CourseID = MVobj.CourseID;
+                        HttpResponseMessage response = _client.PutAsJsonAsync(_client.BaseAddress + "/Course/" + obj.CourseID.ToString(), obj).Result;
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index");
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index",
+                             new RouteValueDictionary(new
+                             {
+                                 controller = "ErrorMessage",
+                                 action = "Index",
+                                 ErrorMessage = "Unsuccessful Update Record Attempt",
+                                 AddressDescription = "at Course Maintenance"
+                             }));
+                            //return NotFound();
+                        }
+                    }
+                    else
+                    {
+                        return View(MVobj);
+                    }
+
+                case "Delete":
+                    if (ModelState.IsValid && obj.CourseID > 0)
+                    {
+                        //_db.DiaryEntries.Remove(obj);
+                        //_db.SaveChanges();
+                        //HttpResponseMessage response = _client.PutAsJsonAsync(_client.BaseAddress + "/DiaryEntries/" + id.ToString(), obj).Result;
+                        HttpResponseMessage response = _client.DeleteAsync(_client.BaseAddress + "/Course/" + obj.CourseID.ToString()).Result;
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index");
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index",
+                             new RouteValueDictionary(new
+                             {
+                                 controller = "ErrorMessage",
+                                 action = "Index",
+                                 ErrorMessage = "Unsuccessful Delete Record Attempt",
+                                 AddressDescription = "at Course Maintenance"
+                             }));
+                            //return NotFound();
+                        }
+                    }
+                    else
+                    {
+                        return View(MVobj);
+                    }
+
+                case "Redisplay":
+                    return RedirectToAction("Index", new { id = 0, SelectedDepartment = MVobj.SelectedDepartment });
+
+                case "Cancel":
+                    MVobj.Title = "1";
+                    MVobj.Department = "1";
+                    MVobj.CreditHours = 1;
+                    MVobj.PrerequisiteCourseID = 1;
+                    return RedirectToAction("Index");
+
+                default:
+                    return RedirectToAction("Index");
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Delete(CourseMVMaint obj)
+        {
+            return View();
         }
 
         private CourseData LoadCourseDataOBJ(Course obj, string sOperationMode)
@@ -215,126 +368,6 @@ namespace ClassAssignmentApp.Controllers
             }
 
             return DataOBJ;
-        }
-
-        [HttpPost]
-        public IActionResult FileUpdate(int id, CourseMVMaint MVobj, string command)
-        {
-            bool ErrorCondition = false;
-            Course obj = new Course();
-            CourseData DataOBJ = new CourseData();
-            if (MVobj.CourseID != null) obj.CourseID = MVobj.CourseID;
-            obj.Title = MVobj.Title;
-            obj.Department = MVobj.Department;
-            obj.CreditHours = (MVobj.CreditHours == null? 0 : (int)MVobj.CreditHours);
-            obj.PrerequisiteCourseID = MVobj.PrerequisiteCourseID;
-            MVobj.ErrorCondition = false;
-            if (obj.Title == null || obj.Title == string.Empty || obj.Title.Length < 5) ErrorCondition = true;
-            if (obj.Department == null || obj.Department == string.Empty) ErrorCondition = true;
-            if (obj.CreditHours == null || obj.CreditHours == 0) ErrorCondition = true;
-            int ErrorCount = 0;
-
-            switch (command)
-            {
-                case "Create":
-                    if (ErrorCondition)
-                    {
-                        DataOBJ = LoadCourseDataOBJ(obj, "ADD");
-                        string SER = JsonConvert.SerializeObject(DataOBJ);  //Conversion tool uses "," to separate fields and ":" to separate field/value pairs
-                        TempData["CourseREC"] = SER; // Store in session value
-                        return RedirectToAction("Index", new { Id = 0, SelectedDepartment = "", pCourseDataOBJ = DataOBJ });
-                    }
-
-                    if (ModelState.IsValid)
-                    {
-                        //_db.DiaryEntries.Add(obj);
-                        //_db.SaveChanges();
-                        HttpResponseMessage response = _client.PostAsJsonAsync(_client.BaseAddress + "/Course/", obj).Result;
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    else
-                    {
-                        return View(MVobj);
-                    }
-
-                case "Edit":
-                    if (ErrorCondition)
-                    {
-                        ModelState.AddModelError("Course", "Invalid data");
-                        DataOBJ = LoadCourseDataOBJ(obj, "CHANGEDELETE");
-                        string SER = JsonConvert.SerializeObject(DataOBJ);
-                        TempData["CourseREC"] = SER; // Store in session value
-                        return RedirectToAction("Index", new { Id = DataOBJ.CourseID, SelectedDepartment = "", pCourseDataOBJ = DataOBJ });
-                    }
-
-                    if (ModelState.IsValid)
-                    {
-                        if (obj.CourseID < 1) obj.CourseID = MVobj.CourseID;
-                        HttpResponseMessage response = _client.PutAsJsonAsync(_client.BaseAddress + "/Course/" + obj.CourseID.ToString(), obj).Result;
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    else
-                    {
-                        return View(MVobj);
-                    }
-
-                case "Delete":
-                    if (ModelState.IsValid && obj.CourseID > 0)
-                    {
-                        //_db.DiaryEntries.Remove(obj);
-                        //_db.SaveChanges();
-                        //HttpResponseMessage response = _client.PutAsJsonAsync(_client.BaseAddress + "/DiaryEntries/" + id.ToString(), obj).Result;
-                        HttpResponseMessage response = _client.DeleteAsync(_client.BaseAddress + "/Course/" + obj.CourseID.ToString()).Result;
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    else
-                    {
-                        return View(MVobj);
-                    }
-
-                case "Redisplay":
-                    return RedirectToAction("Index", new { id = 0, SelectedDepartment = MVobj.SelectedDepartment });
-
-                case "Cancel":
-                    MVobj.Title = "1";
-                    MVobj.Department = "1";
-                    MVobj.CreditHours = 1;
-                    MVobj.PrerequisiteCourseID = 1;
-                    return RedirectToAction("Index");
-
-                default:
-                    return RedirectToAction("Index");
-            }
-        }
-
-        [HttpGet]
-        public IActionResult Delete(CourseMVMaint obj)
-        {
-            return View();
         }
     }
 }

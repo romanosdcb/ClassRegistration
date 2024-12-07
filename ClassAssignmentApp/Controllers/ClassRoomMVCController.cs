@@ -51,7 +51,6 @@ namespace ClassAssignmentApp.Controllers
                 ClassRoomDataOBJ.ErrorCondition = false;
             }
 
-            //Read all ClassRoom records
             HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/ClassRoom").Result;
             ClassRoomMV.BuildingNumber = 0;
             ClassRoomMV.RoomNumber = 0;
@@ -65,7 +64,6 @@ namespace ClassAssignmentApp.Controllers
 
                 if (SelectedBuildingID != null && SelectedBuildingID > 0)
                 {
-                    //If a particular Building Number has been selected then only display those classrooms.
                     var SelectedBuildingData = data.Result.Where(x => x.BuildingNumber == SelectedBuildingID);
                     ClassRoomMV.ClassRoomList = SelectedBuildingData.ToList();
                 }
@@ -100,7 +98,6 @@ namespace ClassAssignmentApp.Controllers
                 }
                 else
                 {
-                    //Read the individual ClassRoom record
                     HttpResponseMessage editRecord = _client.GetAsync(_client.BaseAddress + "/ClassRoom/" + Id.ToString()).Result;
 
                     if (editRecord.IsSuccessStatusCode)
@@ -160,13 +157,174 @@ namespace ClassAssignmentApp.Controllers
                 }
                 else
                 {
-                    return NotFound();
+                    //return NotFound();
+                    return RedirectToAction("Index",
+                     new RouteValueDictionary(new
+                     {
+                         controller = "ErrorMessage",
+                         action = "Index",
+                         ErrorMessage = "Unsuccessful Add Record Attempt",
+                         AddressDescription = "at Classroom Maintenance"
+                     }));
+
                 }
             }
             else
             {
                 return View(obj);
             }
+        }
+
+        [HttpPost]
+        public IActionResult FileUpdate(int id, ClassRoomMVMaint MVobj, string command)
+        {
+            bool ErrorCondition = false;
+            ClassRoom obj = new ClassRoom();
+            ClassRoomData DataOBJ = new ClassRoomData();
+
+            if (MVobj.ClassRoomID != null) obj.ClassRoomID = MVobj.ClassRoomID;
+
+            obj.BuildingNumber = MVobj.BuildingNumber;
+            obj.RoomNumber = MVobj.RoomNumber;
+            obj.Capacity = MVobj.Capacity;
+            MVobj.ErrorCondition = false;
+
+            if (MVobj.Unavail == true)
+                obj.Unavailable = "T";
+            else
+                obj.Unavailable = "F";
+
+            if (obj.BuildingNumber == null || obj.BuildingNumber == 0 || obj.BuildingNumber > 500) ErrorCondition = true;
+            if (obj.RoomNumber == null || obj.RoomNumber == 0) ErrorCondition = true;
+            if (obj.Capacity == null || obj.Capacity == 0) ErrorCondition = true;
+
+            int ErrorCount = 0;
+
+            switch (command)
+            {
+                case "Create":
+                    if (ErrorCondition)
+                    {
+                        DataOBJ = LoadClassRoomDataOBJ(obj, "ADD");
+                        string SER = JsonConvert.SerializeObject(DataOBJ);  //Conversion tool uses "," to separate fields and ":" to separate field/value pairs
+                        TempData["ClassRoomREC"] = SER; // Store in session value
+                        return RedirectToAction("Index", new { Id = 0, SelectedBuildingID = 0, pClassRoomDataOBJ = DataOBJ });
+                    }
+
+                    if (ModelState.IsValid)
+                    {
+                        //_db.DiaryEntries.Add(obj);
+                        //_db.SaveChanges();
+                        HttpResponseMessage response = _client.PostAsJsonAsync(_client.BaseAddress + "/ClassRoom/", obj).Result;
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index");
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index",
+                             new RouteValueDictionary(new
+                             {
+                                 controller = "ErrorMessage",
+                                 action = "Index",
+                                 ErrorMessage = "Unsuccessful Add Record Attempt",
+                                 AddressDescription = "at Classroom Maintenance"
+                             }));
+
+                            //return NotFound();
+                        }
+                    }
+                    else
+                    {
+                        return View(MVobj);
+                    }
+
+
+                case "Edit":
+                    if (ErrorCondition)
+                    {
+                        ModelState.AddModelError("ClassRoom", "Invalid data");
+                        DataOBJ = LoadClassRoomDataOBJ(obj, "CHANGEDELETE");
+                        string SER = JsonConvert.SerializeObject(DataOBJ);
+                        TempData["ClassRoomREC"] = SER; // Store in session value
+                        return RedirectToAction("Index", new { Id = DataOBJ.ClassRoomID, SelectedBuildingID = 0, pClassRoomDataOBJ = DataOBJ });
+                    }
+
+                    if (ModelState.IsValid)
+                    {
+                        if (obj.ClassRoomID < 1) obj.ClassRoomID = MVobj.ClassRoomID;
+                        HttpResponseMessage response = _client.PutAsJsonAsync(_client.BaseAddress + "/ClassRoom/" + obj.ClassRoomID.ToString(), obj).Result;
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index");
+
+                        }
+                        else
+                            return RedirectToAction("Index",
+                                 new RouteValueDictionary(new
+                                 {
+                                     controller = "ErrorMessage",
+                                     action = "Index",
+                                     ErrorMessage = "Unsuccessful Update Attempt",
+                                     AddressDescription = "at Classroom Maintenance"
+                                 }));
+                    }
+                    else
+                    {
+                        return View(MVobj);
+                    }
+
+                case "Delete":
+                    if (ModelState.IsValid && obj.ClassRoomID > 0)
+                    {
+                        //_db.DiaryEntries.Remove(obj);
+                        //_db.SaveChanges();
+                        HttpResponseMessage response = _client.DeleteAsync(_client.BaseAddress + "/ClassRoom/" + obj.ClassRoomID.ToString()).Result;
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index");
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index",
+                             new RouteValueDictionary(new
+                             {
+                                 controller = "ErrorMessage",
+                                 action = "Index",
+                                 ErrorMessage = "Unsuccessful Delete Record Attempt",
+                                 AddressDescription = "at Classroom Maintenance"
+                             }));
+
+                            //return NotFound();
+                        }
+                    }
+                    else
+                    {
+                        return View(MVobj);
+                    }
+
+                case "Redisplay":
+                    return RedirectToAction("Index", new { id = 0, SelectedBuildingID = MVobj.SelectedBuildingNo });
+
+                case "Cancel":
+                    MVobj.ClassRoomID = 1;
+                    MVobj.RoomNumber = 1;
+                    MVobj.BuildingNumber = 1;
+                    MVobj.Capacity = 1;
+                    return RedirectToAction("Index");
+
+                default:
+                    return RedirectToAction("Index");
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Delete(ClassRoomMVMaint obj)
+        {
+            return View();
         }
 
         private ClassRoomData LoadClassRoomDataOBJ(ClassRoom obj, string sOperationMode)
@@ -219,131 +377,5 @@ namespace ClassAssignmentApp.Controllers
             return DataOBJ;
         }
 
-        [HttpPost]
-        public IActionResult FileUpdate(int id, ClassRoomMVMaint MVobj, string command)
-        {
-            bool ErrorCondition = false;
-            ClassRoom obj = new ClassRoom();
-            ClassRoomData DataOBJ = new ClassRoomData();
-
-            if (MVobj.ClassRoomID != null) obj.ClassRoomID = MVobj.ClassRoomID;
-
-            obj.BuildingNumber = MVobj.BuildingNumber;
-            obj.RoomNumber = MVobj.RoomNumber;
-            obj.Capacity = MVobj.Capacity;
-            MVobj.ErrorCondition = false;
-
-            if (MVobj.Unavail == true)
-                obj.Unavailable = "T";
-            else
-                obj.Unavailable = "F";
-
-            if (obj.BuildingNumber == null || obj.BuildingNumber == 0 || obj.BuildingNumber > 500) ErrorCondition = true;
-            if (obj.RoomNumber == null || obj.RoomNumber == 0) ErrorCondition = true;
-            if (obj.Capacity == null || obj.Capacity == 0) ErrorCondition = true;
-
-            int ErrorCount = 0;
-
-            switch (command)
-            {
-                case "Create":
-                    if (ErrorCondition)
-                    {
-                        DataOBJ = LoadClassRoomDataOBJ(obj, "ADD");
-                        string SER = JsonConvert.SerializeObject(DataOBJ);  //Conversion tool uses "," to separate fields and ":" to separate field/value pairs
-                        TempData["ClassRoomREC"] = SER; // Store in session value
-                        return RedirectToAction("Index", new { Id = 0, SelectedBuildingID = 0, pClassRoomDataOBJ = DataOBJ });
-                    }
-
-                    if (ModelState.IsValid)
-                    {
-                        //_db.DiaryEntries.Add(obj);
-                        //_db.SaveChanges();
-                        HttpResponseMessage response = _client.PostAsJsonAsync(_client.BaseAddress + "/ClassRoom/", obj).Result;
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    else
-                    {
-                        return View(MVobj);
-                    }
-
-                case "Edit":
-                    if (ErrorCondition)
-                    {
-                        ModelState.AddModelError("ClassRoom", "Invalid data");
-                        DataOBJ = LoadClassRoomDataOBJ(obj, "CHANGEDELETE");
-                        string SER = JsonConvert.SerializeObject(DataOBJ);
-                        TempData["ClassRoomREC"] = SER; // Store in session value
-                        return RedirectToAction("Index", new { Id = DataOBJ.ClassRoomID, SelectedBuildingID = 0, pClassRoomDataOBJ = DataOBJ });
-                    }
-
-                    if (ModelState.IsValid)
-                    {
-                        if (obj.ClassRoomID < 1) obj.ClassRoomID = MVobj.ClassRoomID;
-                        HttpResponseMessage response = _client.PutAsJsonAsync(_client.BaseAddress + "/ClassRoom/" + obj.ClassRoomID.ToString(), obj).Result;
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    else
-                    {
-                        return View(MVobj);
-                    }
-                    
-                case "Delete":
-                    if (ModelState.IsValid && obj.ClassRoomID > 0)
-                    {
-                        //_db.DiaryEntries.Remove(obj);
-                        //_db.SaveChanges();
-                        HttpResponseMessage response = _client.DeleteAsync(_client.BaseAddress + "/ClassRoom/" + obj.ClassRoomID.ToString()).Result;
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    else
-                    {
-                        return View(MVobj);
-                    }
-
-                case "Redisplay":
-                     return RedirectToAction("Index", new { id = 0, SelectedBuildingID = MVobj.SelectedBuildingNo });
-
-                case "Cancel":
-                    MVobj.ClassRoomID = 1;
-                    MVobj.RoomNumber = 1;
-                    MVobj.BuildingNumber = 1;
-                    MVobj.Capacity = 1;
-                    return RedirectToAction("Index");
-
-                default:
-                    return RedirectToAction("Index");
-            }
-        }
-
-        [HttpGet]
-        public IActionResult Delete(ClassRoomMVMaint obj)
-        {
-            return View();
-        }
     }
 }
