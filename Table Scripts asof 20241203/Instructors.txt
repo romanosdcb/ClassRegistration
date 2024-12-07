@@ -1,0 +1,30 @@
+USE [SchoolTrial01]
+GO
+
+/****** Object:  Table [dbo].[Instructors]    Script Date: 12/3/2024 10:44:47 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Instructors](
+	[InstructorID] [int] IDENTITY(1,1) NOT NULL,
+	[FirstName] [nvarchar](50) NOT NULL,
+	[MiddleName] [nvarchar](50) NOT NULL,
+	[LastName] [nvarchar](50) NOT NULL,
+	[Title] [nvarchar](50) NULL,
+	[PhoneNumber] [nvarchar](20) NULL,
+	[AddressLine1] [nvarchar](100) NULL,
+	[AddressLine2] [nvarchar](50) NULL,
+	[City] [nvarchar](100) NULL,
+	[State] [nvarchar](2) NULL,
+	[ZipCode] [nvarchar](10) NULL,
+ CONSTRAINT [PK_Instructors] PRIMARY KEY CLUSTERED 
+(
+	[InstructorID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+

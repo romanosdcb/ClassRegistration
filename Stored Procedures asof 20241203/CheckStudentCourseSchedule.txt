@@ -1,0 +1,42 @@
+USE [SchoolTrial01]
+GO
+/****** Object:  StoredProcedure [dbo].[CheckStudentCourseSchedule]    Script Date: 12/3/2024 10:33:05 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		Tom Romano
+-- Create date: 11/18/2024
+-- Description:	DislayStudentOptionsPerCourse
+-- =============================================
+ALTER PROCEDURE [dbo].[CheckStudentCourseSchedule]
+	@StudentID int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+SELECT SCS.StudentClassSessionID, SCS.ClassSessionID, CASE 
+		WHEN CS.WeekDay = 'Monday' THEN 1
+		WHEN CS.WeekDay = 'Tuesday' THEN 2
+		WHEN CS.WeekDay = 'Wednesday' THEN 3
+		WHEN CS.WeekDay = 'Thursday' THEN 4
+		WHEN CS.WeekDay = 'Friday' THEN 5
+		WHEN CS.WeekDay = 'Saturday' THEN 6
+		ELSE 7
+		End As DayNumber, IT.FirstName, IT.MiddleName, IT.LastName, IT.InstructorID, CO.Title,
+CS.WeekDay As DayOfWeek, CS.StartTime, CS.EndTime, CR.BuildingNumber, CR.RoomNumber,
+ST.StudentID, CO.CourseID
+FROM ClassSessions CS
+INNER JOIN StudentClassSessions SCS ON CS.ClassSessionID = SCS.ClassSessionID
+INNER JOIN Courses CO ON CS.CourseID = CO.CourseID
+INNER JOIN Instructors IT ON CS.InstructorID = IT.InstructorID
+INNER JOIN ClassRooms CR ON CS.ClassRoomID = CR.ClassRoomID
+INNER JOIN Students ST ON SCS.StudentID = ST.StudentID
+--WHERE CS.WeekDay = 'Monday'
+AND ST.StudentID = @StudentID
+ORDER BY DayNumber, CS.StartTime
+
+
+
+END

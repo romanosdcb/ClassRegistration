@@ -1,0 +1,24 @@
+USE [SchoolTrial01]
+GO
+
+/****** Object:  Table [dbo].[ClassRooms]    Script Date: 12/3/2024 10:41:48 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[ClassRooms](
+	[ClassRoomID] [int] IDENTITY(1,1) NOT NULL,
+	[BuildingNumber] [int] NULL,
+	[RoomNumber] [int] NULL,
+	[Capacity] [int] NULL,
+	[Unavailable] [nvarchar](1) NULL,
+ CONSTRAINT [PK_ClassRooms] PRIMARY KEY CLUSTERED 
+(
+	[ClassRoomID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+

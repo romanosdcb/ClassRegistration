@@ -1,0 +1,86 @@
+USE [SchoolTrial01]
+GO
+/****** Object:  StoredProcedure [dbo].[ListCourseOffering]    Script Date: 12/3/2024 10:36:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		Tom Romano
+-- Create date: 11/20/2024
+-- Description:	List Course Offering for given Course
+-- =============================================
+ALTER PROCEDURE [dbo].[ListCourseOffering]
+@CourseID int,
+@StudentID int
+AS
+BEGIN
+Declare @CourseOfferings TABLE(ClassSessionID INT, CourseID INT, CourseName NVARCHAR(100), ClassRoomID INT, 
+BuildingNumber INT, RoomNumber INT, StartTime TIME(7), EndTime TIME(7), WeekDay VARCHAR(10), 
+StudentsRegistered INT, RoomCapacity INT, ClosedOut NVARCHAR(1), InstructorName NVARCHAR(100) )
+
+INSERT INTO @CourseOfferings
+SELECT CS.ClassSessionID, CO.CourseID, CO.Title As CoursName, CR.ClassRoomID, CR.BuildingNumber, CR.RoomNumber, CS.StartTime, CS.EndTime, CS.WeekDay,
+StudentsRegistered = 
+	(SELECT Count(*) As StudentsRegistered
+	FROM ClassSessions CSP WHERE CSP.CourseID = CO.CourseID AND CSP.ClassRoomID = CR.ClassRoomID),
+CR.Capacity as RoomCapacity, 'F',
+CASE
+	WHEN I.MiddleName = '.' OR I.MiddleName = '' THEN I.FirstName + ' ' + I.LastName
+	ELSE I.FirstName + ' ' + I.MiddleName + ' ' + I.LastName
+END As InstructorName
+FROM Courses CO
+INNER JOIN ClassSessions CS ON CO.CourseID = CS.CourseID
+INNER JOIN ClassRooms CR ON CS.ClassRoomID = CR.ClassRoomID
+INNER JOIN INstructors I ON CS.InstructorID = I.InstructorID
+WHERE CO.CourseID = @CourseID
+
+UPDATE @CourseOfferings SET ClosedOut = 'T' WHERE StudentsRegistered >= RoomCapacity
+
+Declare @StudentSchedule TABLE(StudentClassSessionID INT, ClassSessionID INT, DayNumber INT, FirstName VARCHAR(50), MiddleName VARCHAR(50), LastName VARCHAR(50),
+InstructorID INT, Title VARCHAR(50), WeekDay VARCHAR(10), StartTime TIME(7), EndTime TIME(7), BuildingNumber INT, RoomNumber INT,
+StudentID INT, CourseID INT)
+
+INSERT INTO @StudentSchedule
+EXEC CheckStudentCourseSchedule @StudentID
+
+SELECT COF.ClassSessionID, COF.CourseID, COF.CourseName, COF.ClassRoomID, COF.BuildingNumber, COF.RoomNumber,
+CASE
+		WHEN COF.WeekDay = 'Monday' THEN 'Mon'
+		WHEN COF.WeekDay = 'Tuesday' THEN 'Tues'
+		WHEN COF.WeekDay = 'Wednesday' THEN 'Wed'
+		WHEN COF.WeekDay = 'Thursday' THEN 'Thurs'
+		WHEN COF.WeekDay = 'Friday' THEN 'Fri'
+		WHEN COF.WeekDay = 'Saturday' THEN 'Sat'
+		ELSE 'Sun'
+		End As DayOfWeek,
+COF.StartTime, COF.EndTime, COF.RoomCapacity,
+CASE 
+		WHEN COF.WeekDay = 'Monday' THEN 1
+		WHEN COF.WeekDay = 'Tuesday' THEN 2
+		WHEN COF.WeekDay = 'Wednesday' THEN 3
+		WHEN COF.WeekDay = 'Thursday' THEN 4
+		WHEN COF.WeekDay = 'Friday' THEN 5
+		WHEN COF.WeekDay = 'Saturday' THEN 6
+		ELSE 7
+		End As DayNumber,
+CASE 
+	WHEN EXISTS (SELECT SS.ClassSessionID FROM @StudentSchedule SS WHERE SS.ClassSessionID = COF.ClassSessionID) THEN 'SELECTED'
+	WHEN EXISTS 
+			(
+				SELECT * FROM @StudentSchedule SS
+				WHERE (COF.WeekDay = SS.WeekDay)
+				AND 
+				( 
+					(SS.StartTime >= COF.StartTime and SS.StartTime <= COF.EndTime)
+					OR (SS.EndTime >=  COF.StartTime and SS.EndTime <= COF.EndTime)
+					OR (SS.StartTime <= COF.StartTime and SS.EndTime >= COF.EndTime)
+				)
+			)
+		THEN 'CONFLICT'
+	ELSE 'AVAILABLE'
+END AS AvailabilityStatus, COF.ClosedOut, COF.InstructorName
+FROM @CourseOfferings COF
+ORDER BY CourseName, DayNumber, COF.StartTime, COF.BuildingNumber, COF.RoomNumber
+
+END

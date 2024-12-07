@@ -1,0 +1,40 @@
+USE [SchoolTrial01]
+GO
+/****** Object:  StoredProcedure [dbo].[CheckClassRoomSchedule]    Script Date: 12/3/2024 10:31:47 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		Tom Romano
+-- Create date: 11/12/2024
+-- Description:	Check for Instructor Scheduling conflicts
+-- =============================================
+ALTER PROCEDURE [dbo].[CheckClassRoomSchedule] 
+	@ClassRoomID int,
+	@WeekDay nvarchar(10),
+	@StartTime time(7),
+	@EndTime time(7)
+
+AS
+BEGIN
+
+	SET NOCOUNT ON;
+
+	Declare @RoomSchedule TABLE(StudentClassSessionID INT, ClassSessionID INT, InstructorID INT, FirstName VARCHAR(50), MiddleName VARCHAR(50), LastName VARCHAR(50),
+	BuildingNumber INT, RoomNumber INT, Title VARCHAR(50), StartTime TIME(7), EndTime TIME(7), WeekDay VARCHAR(10), StudentID INT, CourseID INT, DayOfWeek VARCHAR(10))
+
+	INSERT INTO @RoomSchedule
+	EXEC ClassRoomScheduleByDayOfWeek @ClassRoomID, @WeekDay
+
+	--SELECT * FROM @InstSchedule
+
+	--SELECT Count('*') As KNT
+	Select StudentClassSessionID = 0, ClassSessionID, InstructorID, FirstName, MiddleName, LastName, BuildingNumber, RoomNumber, Title, StartTime, EndTime, WeekDay
+	FROM @RoomSchedule I
+	WHERE ((@StartTime > I.StartTime AND @StartTime < I.EndTime)
+	OR (@EndTime > I.StartTime AND @EndTime < I.EndTime)
+	OR (@StartTime <= I.StartTime AND @EndTime >= I.EndTime))
+	AND (UPPER(@WeekDay) = UPPER(I.WeekDay))
+
+END
